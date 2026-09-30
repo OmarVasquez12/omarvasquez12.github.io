@@ -1768,7 +1768,7 @@ window.closeEncryptPanel = () => {
 };
 
 // =============================================
-//          GESTIÓN DE LICENCIAS DE USUARIO (CON GOOGLE DRIVE)
+//          GESTIÓN DE LICENCIAS DE USUARIO (CON GOOGLE DRIVE INLINE)
 // =============================================
 
 function checkUserLicensesButtonVisibility() {
@@ -1827,11 +1827,7 @@ function renderUserLicensesManagementList(filterText = "") {
         const statusClass = isActive ? "on" : "off";
         const statusText = isActive ? "ACTIVA" : "INACTIVA";
         
-        // Verificar si tiene enlace de Drive
         const hasDriveLink = lic.driveLink && lic.driveLink.trim() !== "";
-        const driveLinkDisplay = hasDriveLink ? 
-            `<span style="color:var(--success); font-size:0.75rem;"><i class="fa-solid fa-check"></i> Tiene enlace</span>` : 
-            `<span style="color:var(--danger); font-size:0.75rem;"><i class="fa-solid fa-xmark"></i> Sin enlace</span>`;
 
         item.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
@@ -1859,7 +1855,7 @@ function renderUserLicensesManagementList(filterText = "") {
                     ${hasDriveLink ? '✓ Enlace configurado' : '✗ Sin enlace'}
                 </span>
                 <button class="btn-action-small" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:${hasDriveLink ? 'var(--success)' : 'var(--primary)'}; border-color:${hasDriveLink ? 'var(--success)' : 'var(--primary)'};" 
-                        onclick="editUserLicenseDriveLink('${lic.id}', '${lic.driveLink || ''}')">
+                        onclick="editUserLicenseDriveLink('${lic.id}', '${lic.driveLink || ''}', this)">
                     <i class="fa-solid fa-pen"></i> ${hasDriveLink ? 'Editar' : 'Agregar'}
                 </button>
             </div>
@@ -1902,38 +1898,74 @@ window.editUserLicenseIP = (id, currentIp, currentPort) => {
     }, `${currentIp}:${currentPort}`, "Nueva IP:PUERTO:");
 };
 
-window.editUserLicenseDriveLink = (id, currentDriveLink) => {
-    openPapeletaModal("ENLACE DE GOOGLE DRIVE", true, async (nuevoValor) => {
-        if (!nuevoValor || nuevoValor.trim() === "") {
-            // Si está vacío, eliminar el enlace
-            try {
-                await updateDoc(doc(db, "licencias", id), { 
-                    driveLink: null 
-                });
-                updateLog(`✅ Enlace de Drive eliminado`);
-                renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
-            } catch (e) {
-                openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`);
-            }
-            return;
-        }
-        
-        // Validar que sea URL de Google Drive
-        if (!nuevoValor.includes('drive.google.com')) {
-            setTimeout(() => openPapeletaModal("ERROR", false, null, "", "⚠️ Debe ser un enlace válido de Google Drive (https://drive.google.com/...)"), 200);
-            return;
-        }
+// === NUEVA FUNCIÓN: Edición Inline del Link de Drive ===
+window.editUserLicenseDriveLink = (id, currentDriveLink, btnElement) => {
+    const driveRow = btnElement.parentElement;
+    
+    // Verificar si ya hay un input abierto
+    if (driveRow.querySelector('.drive-link-input')) {
+        renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
+        return;
+    }
 
+    // Reemplazar con input inline
+    driveRow.innerHTML = `
+        <span style="font-size:0.75rem; color:var(--text-muted); width:70px;">GOOGLE DRIVE</span>
+        <input type="text" class="drive-link-input" 
+               value="${currentDriveLink || ''}" 
+               placeholder="https://drive.google.com/..." 
+               style="flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border-color); 
+                      border-radius:var(--radius-sm); padding:0.4rem 0.6rem; color:white; font-size:0.8rem;
+                      font-family:'JetBrains Mono', monospace;">
+        <button class="btn-action-small" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:var(--success); border-color:var(--success);" 
+                onclick="saveDriveLinkInline('${id}', this)">
+            <i class="fa-solid fa-check"></i> Guardar
+        </button>
+        <button class="btn-action-small" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:var(--danger); border-color:var(--danger);" 
+                onclick="cancelDriveLinkInline()">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+        </button>
+    `;
+    
+    // Auto-focus el input
+    setTimeout(() => {
+        const input = driveRow.querySelector('.drive-link-input');
+        if (input) input.focus();
+    }, 50);
+};
+
+window.saveDriveLinkInline = async (id, btnElement) => {
+    const driveRow = btnElement.parentElement;
+    const input = driveRow.querySelector('.drive-link-input');
+    const nuevoValor = input.value.trim();
+    
+    if (!nuevoValor) {
         try {
-            await updateDoc(doc(db, "licencias", id), { 
-                driveLink: nuevoValor.trim() 
-            });
-            updateLog(`✅ Enlace de Drive actualizado`);
+            await updateDoc(doc(db, "licencias", id), { driveLink: null });
+            updateLog(`✅ Enlace de Drive eliminado`);
             renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
         } catch (e) {
             openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`);
         }
-    }, currentDriveLink || "", "Pega el enlace de Google Drive (o déjalo vacío para eliminar):");
+        return;
+    }
+    
+    if (!nuevoValor.includes('drive.google.com')) {
+        openPapeletaModal("ERROR", false, null, "", "⚠️ Debe ser un enlace válido de Google Drive (https://drive.google.com/...)");
+        return;
+    }
+
+    try {
+        await updateDoc(doc(db, "licencias", id), { driveLink: nuevoValor });
+        updateLog(`✅ Enlace de Drive actualizado`);
+        renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
+    } catch (e) {
+        openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`);
+    }
+};
+
+window.cancelDriveLinkInline = () => {
+    renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
 };
 
 window.toggleUserLicenseStatus = async (id, currentStatus) => {
