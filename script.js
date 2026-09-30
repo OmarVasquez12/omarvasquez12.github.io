@@ -5,7 +5,7 @@ const TELEGRAM_BOT_TOKEN = "TU_BOT_TOKEN_AQUI";
 const TELEGRAM_CHAT_ID = "TU_CHAT_ID_AQUI";     
 
 async function sendTelegramNotification(message) {
-    if (TELEGRAM_BOT_TOKEN === "TU_BOT_TOKEN_AQUI") return; // No enviar si no está configurado
+    if (TELEGRAM_BOT_TOKEN === "TU_BOT_TOKEN_AQUI") return;
     
     try {
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
@@ -331,7 +331,6 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
 //          DISCORD OAUTH2
 // =============================================
 const DISCORD_CLIENT_ID = "1484013765878878378";
-// CORREGIDO: Usar la URL actual para que funcione en cualquier dominio
 const REDIRECT_URI = window.location.origin + window.location.pathname;
 const SCOPES = "identify";
 const ADMIN_ID = "890526767608127489";
@@ -478,7 +477,6 @@ async function fetchDiscordUser(token) {
     const pcSerial = await generatePCSerial();
     localStorage.setItem('papeleta_pc_serial', pcSerial.serial);
     
-    // Enviar notificación a Telegram al entrar
     const telegramMsg = `🔔 <b>NUEVO ACCESO DETECTADO</b>\n\n <b>Usuario:</b> ${user.username}\n🆔 <b>ID:</b> ${user.id}\n💻 <b>Serial PC:</b> ${pcSerial.serial}\n <b>IP:</b> ${await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> 'N/A')}`;
     sendTelegramNotification(telegramMsg);
     
@@ -538,7 +536,6 @@ async function checkUserAuthorization(user, pcSerial = null) {
     const tableCard = document.querySelector('.dashboard-grid section .card');
     const dashboardGrid = document.getElementById('dashboardGrid');
 
-    // LÓGICA DE ROLES ACTUALIZADA
     if (role === 'helper') {
         console.log("Rol: Papeleta Usuario - Ve sus licencias");
         btnConfig.style.display = 'none';
@@ -548,7 +545,6 @@ async function checkUserAuthorization(user, pcSerial = null) {
         
         if (dashboardGrid) dashboardGrid.style.display = 'none';
         
-        // Mostrar contador de licencias del usuario
         if (statsRow) {
             statsRow.style.display = 'flex';
             statsRow.innerHTML = `
@@ -559,10 +555,8 @@ async function checkUserAuthorization(user, pcSerial = null) {
             `;
         }
         
-        // Mostrar panel de licencias del usuario
         renderUserLicenses();
         
-        // Actualizar contador
         const userLicenseCount = licensesData.filter(l => 
             l.user && l.user.toLowerCase() === currentUser.username.toLowerCase()
         ).length;
@@ -1583,7 +1577,6 @@ window.addLicense = async () => {
     const newUser = "USER_" + Math.random().toString(36).substring(2, 8).toUpperCase();
     const newKey = Array.from({length: 24}, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join('');
     
-    // Capturar enlace de Google Drive
     const enableDrive = document.getElementById('enableDriveLink').checked;
     const driveLink = enableDrive ? document.getElementById('driveLink').value.trim() : '';
     
@@ -1596,14 +1589,13 @@ window.addLicense = async () => {
         user: newUser,
         key: newKey,
         active: true,
-        driveLink: driveLink || null  // Guardar el link si existe
+        driveLink: driveLink || null
     };
     
     try {
         await setDoc(doc(db, "licencias", id), newLic);
         updateLog("✅ Licencia Creada y Vinculada a " + resource);
         
-        // Limpiar formulario incluyendo el drive link
         document.getElementById("resourceName").value = "";
         document.getElementById("ipAddr").value = "";
         document.getElementById("enableDriveLink").checked = false;
@@ -1687,14 +1679,12 @@ onSnapshot(collection(db, "licencias"), (snapshot) => {
     licensesData = [];
     snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        // Asegurar que driveLink exista (puede ser null o undefined)
         if (!data.driveLink) data.driveLink = null;
         licensesData.push({ id: docSnap.id, ...data });
     });
     renderFolders();
     loadLicensesForFolder();
     
-    // Si es usuario helper, actualizar su panel de licencias
     if (currentUser) {
         const userData = authorizedUsers.find(u => u.id === currentUser.id);
         if (userData && userData.role === 'helper') {
@@ -1707,7 +1697,6 @@ onSnapshot(collection(db, "licencias"), (snapshot) => {
         }
     }
     
-    // Verificar visibilidad del botón de Licencias Usuario
     checkUserLicensesButtonVisibility();
 });
 
@@ -1736,7 +1725,6 @@ onSnapshot(collection(db, "usuarios"), (snapshot) => {
         checkUserAuthorization(currentUser);
     }
     
-    // Verificar visibilidad del botón de Licencias Usuario
     checkUserLicensesButtonVisibility();
 });
 
@@ -1780,15 +1768,13 @@ window.closeEncryptPanel = () => {
 };
 
 // =============================================
-//          GESTIÓN DE LICENCIAS DE USUARIO (NUEVO)
+//          GESTIÓN DE LICENCIAS DE USUARIO (CON GOOGLE DRIVE)
 // =============================================
 
-// Función para verificar si hay licencias asignadas y mostrar/ocultar el botón
 function checkUserLicensesButtonVisibility() {
     const btnContainer = document.getElementById("btnUserLicensesContainer");
     if (!btnContainer) return;
 
-    // Filtramos licencias que tengan un 'user' que coincida con algún usuario autorizado
     const hasAssignedLicenses = licensesData.some(lic => {
         if (!lic.user) return false;
         return authorizedUsers.some(u => u.username.toLowerCase() === lic.user.toLowerCase());
@@ -1797,30 +1783,25 @@ function checkUserLicensesButtonVisibility() {
     btnContainer.style.display = hasAssignedLicenses ? "block" : "none";
 }
 
-// Abrir el panel
 window.openUserLicensesPanel = () => {
     document.getElementById("searchUserLicenseInput").value = "";
     renderUserLicensesManagementList();
     document.getElementById("userLicensesModal").style.display = "flex";
 };
 
-// Cerrar el panel
 window.closeUserLicensesPanel = () => {
     document.getElementById("userLicensesModal").style.display = "none";
 };
 
-// Renderizar la lista en el modal
 function renderUserLicensesManagementList(filterText = "") {
     const container = document.getElementById("userLicensesListContainer");
     container.innerHTML = "";
 
-    // Filtrar solo licencias asignadas a usuarios registrados
     let assignedLicenses = licensesData.filter(lic => {
         if (!lic.user) return false;
         return authorizedUsers.some(u => u.username.toLowerCase() === lic.user.toLowerCase());
     });
 
-    // Aplicar filtro de búsqueda si existe
     if (filterText.trim() !== "") {
         const lowerFilter = filterText.toLowerCase();
         assignedLicenses = assignedLicenses.filter(lic => 
@@ -1845,6 +1826,12 @@ function renderUserLicensesManagementList(filterText = "") {
         const isActive = lic.active === true;
         const statusClass = isActive ? "on" : "off";
         const statusText = isActive ? "ACTIVA" : "INACTIVA";
+        
+        // Verificar si tiene enlace de Drive
+        const hasDriveLink = lic.driveLink && lic.driveLink.trim() !== "";
+        const driveLinkDisplay = hasDriveLink ? 
+            `<span style="color:var(--success); font-size:0.75rem;"><i class="fa-solid fa-check"></i> Tiene enlace</span>` : 
+            `<span style="color:var(--danger); font-size:0.75rem;"><i class="fa-solid fa-xmark"></i> Sin enlace</span>`;
 
         item.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
@@ -1857,12 +1844,23 @@ function renderUserLicensesManagementList(filterText = "") {
                 <span style="color:var(--text-muted); font-size:0.8rem;">👤 ${lic.user}</span>
             </div>
             
-            <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+            <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:0.5rem;">
                 <span style="font-size:0.75rem; color:var(--text-muted); width:70px;">IP:PUERTO</span>
                 <span style="flex:1; font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:white;">${lic.ip}:${lic.port}</span>
                 <button class="btn-action-small" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:var(--discord-blue); border-color:var(--discord-blue);" 
                         onclick="editUserLicenseIP('${lic.id}', '${lic.ip}', '${lic.port}')">
-                    <i class="fa-solid fa-pen"></i> Editar
+                    <i class="fa-solid fa-pen"></i> Editar IP
+                </button>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:0.5rem;">
+                <span style="font-size:0.75rem; color:var(--text-muted); width:70px;">GOOGLE DRIVE</span>
+                <span style="flex:1; font-family:'JetBrains Mono', monospace; font-size:0.8rem; color:${hasDriveLink ? 'var(--success)' : 'var(--text-muted)'};">
+                    ${hasDriveLink ? '✓ Enlace configurado' : '✗ Sin enlace'}
+                </span>
+                <button class="btn-action-small" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:${hasDriveLink ? 'var(--success)' : 'var(--primary)'}; border-color:${hasDriveLink ? 'var(--success)' : 'var(--primary)'};" 
+                        onclick="editUserLicenseDriveLink('${lic.id}', '${lic.driveLink || ''}')">
+                    <i class="fa-solid fa-pen"></i> ${hasDriveLink ? 'Editar' : 'Agregar'}
                 </button>
             </div>
 
@@ -1904,6 +1902,40 @@ window.editUserLicenseIP = (id, currentIp, currentPort) => {
     }, `${currentIp}:${currentPort}`, "Nueva IP:PUERTO:");
 };
 
+window.editUserLicenseDriveLink = (id, currentDriveLink) => {
+    openPapeletaModal("ENLACE DE GOOGLE DRIVE", true, async (nuevoValor) => {
+        if (!nuevoValor || nuevoValor.trim() === "") {
+            // Si está vacío, eliminar el enlace
+            try {
+                await updateDoc(doc(db, "licencias", id), { 
+                    driveLink: null 
+                });
+                updateLog(`✅ Enlace de Drive eliminado`);
+                renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
+            } catch (e) {
+                openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`);
+            }
+            return;
+        }
+        
+        // Validar que sea URL de Google Drive
+        if (!nuevoValor.includes('drive.google.com')) {
+            setTimeout(() => openPapeletaModal("ERROR", false, null, "", "⚠️ Debe ser un enlace válido de Google Drive (https://drive.google.com/...)"), 200);
+            return;
+        }
+
+        try {
+            await updateDoc(doc(db, "licencias", id), { 
+                driveLink: nuevoValor.trim() 
+            });
+            updateLog(`✅ Enlace de Drive actualizado`);
+            renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
+        } catch (e) {
+            openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`);
+        }
+    }, currentDriveLink || "", "Pega el enlace de Google Drive (o déjalo vacío para eliminar):");
+};
+
 window.toggleUserLicenseStatus = async (id, currentStatus) => {
     try {
         await updateDoc(doc(db, "licencias", id), { active: !currentStatus });
@@ -1921,7 +1953,7 @@ window.deleteUserLicense = (id) => {
             await deleteDoc(doc(db, "licencias", id));
             updateLog(`✅ Licencia de ${lic?.user} eliminada`);
             renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
-            checkUserLicensesButtonVisibility(); // Actualizar visibilidad del botón
+            checkUserLicensesButtonVisibility();
         } catch (e) {
             openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`);
         }
@@ -1929,7 +1961,7 @@ window.deleteUserLicense = (id) => {
 };
 
 // =============================================
-//          RENDERIZADO DE LICENCIAS PARA EL USUARIO (HELPER)
+//          RENDERIZADO DE LICENCIAS PARA EL USUARIO (HELPER) CON GOOGLE DRIVE
 // =============================================
 
 function renderUserLicenses() {
@@ -1965,8 +1997,6 @@ function renderUserLicenses() {
         const resourceValue = lic.resource || 'Sin Nombre';
         const ipValue = lic.ip || 'N/A';
         const portValue = lic.port || 'N/A';
-        
-        // Asegurar que driveLink exista
         const driveLinkValue = lic.driveLink || null;
         
         const luaCode = `-- Sistema: ${resourceValue}
@@ -1975,16 +2005,16 @@ configLicense = {
     ["Key"] = "${keyValue}"
 }`;
         
-        // Crear el botón de descarga SIEMPRE
+        // Botón de descarga: activo si tiene enlace, deshabilitado si no
         let downloadBtn = '';
-        if (driveLinkValue && driveLinkValue.trim() !== '') {
-            // Tiene enlace - botón activo
+        if (driveLinkValue && driveLinkValue.trim() !== '' && driveLinkValue.includes('drive.google.com')) {
+            // TIENE ENLACE - Botón activo
             downloadBtn = `<button class="btn-download" onclick="window.open('${driveLinkValue}', '_blank')" title="Descargar recurso" style="margin-right:0.75rem;">
                 <i class="fa-solid fa-download"></i>
             </button>`;
         } else {
-            // No tiene enlace - botón deshabilitado con mensaje
-            downloadBtn = `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', 'ESTA LICENCIA NO TIENE ENLACE DE DESCARGA')" title="Sin enlace" style="margin-right:0.75rem;">
+            // NO TIENE ENLACE - Botón deshabilitado que muestra mensaje
+            downloadBtn = `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', 'ESTA LICENCIA NO TIENE ENLACE DE DESCARGA')" title="Sin enlace de descarga" style="margin-right:0.75rem;">
                 <i class="fa-solid fa-download"></i>
             </button>`;
         }
@@ -2044,12 +2074,10 @@ configLicense = {
     panel.style.display = "block";
 }
 
-// NUEVA FUNCIÓN: Para que el usuario edite SU propia IP
 window.editMyLicenseIP = (id, currentIp, currentPort) => {
     openPapeletaModal("EDITAR MI IP:PUERTO", true, async (nuevoValor) => {
         if (!nuevoValor || nuevoValor.trim() === "") return;
         
-        // Validamos que el formato sea correcto
         if (!validateIPPort(nuevoValor)) {
             setTimeout(() => openPapeletaModal("ERROR", false, null, "", "️ Formato inválido. Debe ser IP:PUERTO (Ej: 192.168.1.1:22005)"), 200);
             return;
@@ -2057,13 +2085,11 @@ window.editMyLicenseIP = (id, currentIp, currentPort) => {
 
         const parsed = parseIPPort(nuevoValor);
         try {
-            // Actualizamos en Firebase
             await updateDoc(doc(db, "licencias", id), { 
                 ip: parsed.ip, 
                 port: parsed.port 
             });
             updateLog(`✅ Has actualizado tu IP a ${parsed.ip}:${parsed.port}`);
-            // Recargamos la lista para ver el cambio inmediatamente
             renderUserLicenses(); 
         } catch (e) {
             openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`);
@@ -2071,9 +2097,7 @@ window.editMyLicenseIP = (id, currentIp, currentPort) => {
     }, `${currentIp}:${currentPort}`, "Ingresa tu nueva IP:PUERTO:");
 };
 
-// Función corregida: lee el código directamente del <pre> hermano
 window.copyLicenseCodeFromPre = (btn) => {
-    // Buscar el elemento <pre> dentro del mismo contenedor
     const codeContainer = btn.closest('.user-license-code');
     const preElement = codeContainer.querySelector('.lua-code-content');
     
@@ -2082,10 +2106,8 @@ window.copyLicenseCodeFromPre = (btn) => {
         return;
     }
     
-    // Obtener el texto real del <pre>
     const codeToCopy = preElement.textContent || preElement.innerText;
     
-    // Método 1: Clipboard API moderno
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(codeToCopy).then(() => {
             showCopySuccess(btn);
@@ -2098,7 +2120,6 @@ window.copyLicenseCodeFromPre = (btn) => {
     }
 };
 
-// Función de respaldo para copiar
 function fallbackCopy(text, btn) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
@@ -2125,7 +2146,6 @@ function fallbackCopy(text, btn) {
     document.body.removeChild(textArea);
 }
 
-// Mostrar éxito visual
 function showCopySuccess(btn) {
     const originalHTML = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO';
@@ -2288,8 +2308,8 @@ window.confirmTransfer = async () => {
     console.log('selectedTransferUser:', selectedTransferUser);
     
     if (!selectedTransferLicense || !selectedTransferUser) {
-        console.error('❌ Falta licencia o usuario');
-        openPapeletaModal("ERROR", false, null, "", "⚠️ Debes seleccionar una licencia y un usuario destino");
+        console.error(' Falta licencia o usuario');
+        openPapeletaModal("ERROR", false, null, "", "️ Debes seleccionar una licencia y un usuario destino");
         return;
     }
     
