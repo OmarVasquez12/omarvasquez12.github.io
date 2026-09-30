@@ -1831,7 +1831,7 @@ configLicense = {
             </button>`;
         } else {
             // No tiene enlace - botón deshabilitado con mensaje
-            downloadBtn = `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', '📁 Esta licencia no tiene enlace de descarga')" title="Sin enlace" style="margin-right:0.75rem;">
+            downloadBtn = `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', 'ESTA LICENCIA NO TIENE ENLACE DE DESCARGA')" title="Sin enlace" style="margin-right:0.75rem;">
                 <i class="fa-solid fa-download"></i>
             </button>`;
         }
