@@ -479,7 +479,7 @@ async function fetchDiscordUser(token) {
     localStorage.setItem('papeleta_pc_serial', pcSerial.serial);
     
     // Enviar notificación a Telegram al entrar
-    const telegramMsg = `🔔 <b>NUEVO ACCESO DETECTADO</b>\n\n👤 <b>Usuario:</b> ${user.username}\n🆔 <b>ID:</b> ${user.id}\n💻 <b>Serial PC:</b> ${pcSerial.serial}\n🌐 <b>IP:</b> ${await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> 'N/A')}`;
+    const telegramMsg = `🔔 <b>NUEVO ACCESO DETECTADO</b>\n\n <b>Usuario:</b> ${user.username}\n🆔 <b>ID:</b> ${user.id}\n💻 <b>Serial PC:</b> ${pcSerial.serial}\n <b>IP:</b> ${await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> 'N/A')}`;
     sendTelegramNotification(telegramMsg);
     
     await checkUserAuthorization(user, pcSerial);
@@ -992,7 +992,6 @@ function renderLicenseTable(licenses) {
     document.getElementById("active-count").innerText = licenses.filter(l => l.active).length;
 }
 
-// ==================== EDICIÓN MÚLTIPLE ====================
 
 window.openEditOptionsModal = () => {
     renderLicenseSelectionList();
@@ -1429,9 +1428,6 @@ const updateLog = (msg, isError = false) => {
     log.style.color = isError ? "var(--danger)" : "var(--success)";
 };
 
-// ============================================================
-// CÓDIGO LUA
-// ============================================================
 window.showServerLua = () => {
     const code = `local function clean(s)
     if not s then return "" end
@@ -1478,7 +1474,7 @@ local function validarLicencia()
         if ipActual == "" or ipActual == "0.0.0.0" then
             ipActual = clean(getServerConfigSetting("serverip") or "")
             if ipActual == "auto" or ipActual == "" then
-                outputDebugString("[Papeleta Progamador] ADVERTENCIA: No se pudo detectar IP automáticamente", 2)
+                outputDebugString("[Papeleta Progamador] ADVERTENCIA: No se pudo detectar IP automaticamente", 2)
             end
         end
         
@@ -1520,7 +1516,7 @@ function validarConFirebase(ipPortCompleto, userLocal, keyLocal, resourceName)
                             end
                         else
                             keyEncontradaPeroMalSistema = true
-                            outputDebugString("[Papeleta Progamador] ERROR: Key válida pero pertenece al sistema '" .. fireResource .. "'", 1)
+                            outputDebugString("[Papeleta Progamador] ERROR: Key valida pero pertenece al sistema '" .. fireResource .. "'", 1)
                             outputDebugString("[Papeleta Progamador] Este sistema es '" .. resourceName .. "'. Licencia denegada.", 1)
                         end
                         break
@@ -1536,9 +1532,9 @@ function validarConFirebase(ipPortCompleto, userLocal, keyLocal, resourceName)
             end
         else
             if keyEncontradaPeroMalSistema then
-                outputDebugString("[Papeleta Progamador] LICENCIA DENEGADA: Key incorrecta para este sistema", 1)
+                outputDebugString("[Papeleta Progamador] LICENCIA DENEGADA", 1)
             else
-                outputDebugString("[Papeleta Progamador] LICENCIA NO VERIFICADA (Key inválida o expirada)", 1)
+                outputDebugString("[Papeleta Progamador] LICENCIA NO VERIFICADA ", 1)
             end
             stopResource(getThisResource())
         end
@@ -1551,7 +1547,7 @@ addEventHandler("onResourceStart", resourceRoot, function()
         setTimer(function() stopResource(getThisResource()) end, 50, 1)
         return
     end
-    outputDebugString("[Papeleta Progamador] INICIANDO VERIFICACIÓN DE LICENCIA...", 3)
+    outputDebugString("[Papeleta Progamador] INICIANDO VERIFICACION DE LICENCIA...", 3)
     validarLicencia()
     setTimer(validarLicencia, 8996400000, 0)
 end, true, "high")`;
@@ -1565,14 +1561,14 @@ end, true, "high")`;
 // ============================================================
 window.addLicense = async () => {
     if (!currentFolder) {
-        return openPapeletaModal("ERROR", false, null, "", "️ SELECCIONA UNA CARPETA PRIMERO");
+        return openPapeletaModal("ERROR", false, null, "", "⚠️ SELECCIONA UNA CARPETA PRIMERO");
     }
     
-    const resource = document.getElementById("resourceName").value.trim().toUpperCase();
+    const resource = document.getElementById("resourceName").value.trim();
     const ipPort = document.getElementById("ipAddr").value.trim();
     
     if(!resource || !ipPort) return openPapeletaModal("ERROR", false, null, "", "FALTAN DATOS (Recurso e IP son obligatorios)");
-    if (!validateIPPort(ipPort)) return openPapeletaModal("ERROR", false, null, "", "️ FORMATO INVÁLIDO\nDebe ser IP:PUERTO");
+    if (!validateIPPort(ipPort)) return openPapeletaModal("ERROR", false, null, "", "⚠️ FORMATO INVÁLIDO\nDebe ser IP:PUERTO");
     
     const parsed = parseIPPort(ipPort);
     
@@ -1581,11 +1577,15 @@ window.addLicense = async () => {
         return openPapeletaModal("ERROR", false, null, "", "️ YA EXISTE UNA LICENCIA PARA ESTE SISTEMA E IP");
     }
 
-    updateLog(" Generando licencia única...");
+    updateLog("🔑 Generando licencia única...");
     const id = Date.now().toString();
     
     const newUser = "USER_" + Math.random().toString(36).substring(2, 8).toUpperCase();
     const newKey = Array.from({length: 24}, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join('');
+    
+    // Capturar enlace de Google Drive
+    const enableDrive = document.getElementById('enableDriveLink').checked;
+    const driveLink = enableDrive ? document.getElementById('driveLink').value.trim() : '';
     
     const newLic = {
         id, 
@@ -1595,14 +1595,21 @@ window.addLicense = async () => {
         IDCARPETA: currentFolder,
         user: newUser,
         key: newKey,
-        active: true
+        active: true,
+        driveLink: driveLink || null  // Guardar el link si existe
     };
     
     try {
         await setDoc(doc(db, "licencias", id), newLic);
         updateLog("✅ Licencia Creada y Vinculada a " + resource);
+        
+        // Limpiar formulario incluyendo el drive link
         document.getElementById("resourceName").value = "";
         document.getElementById("ipAddr").value = "";
+        document.getElementById("enableDriveLink").checked = false;
+        document.getElementById("driveLink").value = "";
+        document.getElementById("driveLink").disabled = true;
+        
         showLua(newUser, newKey, resource);
         sendDiscordNotification('creada', newLic);
     } catch (e) { updateLog("❌ Error: " + e.message, true); }
@@ -1678,7 +1685,12 @@ onSnapshot(collection(db, "carpetas"), (snapshot) => {
 
 onSnapshot(collection(db, "licencias"), (snapshot) => {
     licensesData = [];
-    snapshot.forEach((docSnap) => licensesData.push({ id: docSnap.id, ...docSnap.data() }));
+    snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        // Asegurar que driveLink exista (puede ser null o undefined)
+        if (!data.driveLink) data.driveLink = null;
+        licensesData.push({ id: docSnap.id, ...data });
+    });
     renderFolders();
     loadLicensesForFolder();
     
@@ -1769,8 +1781,6 @@ window.closeEncryptPanel = () => {
 
 // ==================== PANEL DE LICENCIAS DEL USUARIO ====================
 
-// ==================== PANEL DE LICENCIAS DEL USUARIO ====================
-
 function renderUserLicenses() {
     const panel = document.getElementById("userLicensesPanel");
     const list = document.getElementById("userLicensesList");
@@ -1805,12 +1815,22 @@ function renderUserLicenses() {
         const resourceValue = lic.resource || 'Sin Nombre';
         const ipValue = lic.ip || 'N/A';
         const portValue = lic.port || 'N/A';
+        const driveLinkValue = lic.driveLink || null;  // Obtener el link
         
         const luaCode = `-- Sistema: ${resourceValue}
 configLicense = {
     ["User"] = "${userValue}",
     ["Key"] = "${keyValue}"
 }`;
+        
+        // Botón de descarga al lado del estado
+        const downloadButtonHtml = driveLinkValue ? 
+            `<button class="btn-download" onclick="window.open('${driveLinkValue}', '_blank')" title="Descargar recurso" style="margin-right:0.75rem;">
+                <i class="fa-solid fa-download"></i>
+            </button>` : 
+            `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', '📁 Esta licencia no tiene enlace de descarga')" title="Sin enlace" style="margin-right:0.75rem; opacity:0.3; cursor:not-allowed;">
+                <i class="fa-solid fa-download"></i>
+            </button>`;
         
         const card = document.createElement("div");
         card.className = "user-license-card";
@@ -1820,7 +1840,10 @@ configLicense = {
                     <i class="fa-solid fa-cube"></i>
                     ${resourceValue}
                 </div>
-                <span class="user-license-status ${statusClass}">${statusText}</span>
+                <div style="display:flex; align-items:center;">
+                    ${downloadButtonHtml}
+                    <span class="user-license-status ${statusClass}">${statusText}</span>
+                </div>
             </div>
             
             <!-- CAMPO IP:PUERTO CON BOTÓN EDITAR -->
@@ -1893,8 +1916,10 @@ window.editMyLicenseIP = (id, currentIp, currentPort) => {
 };
 
 window.copyLicenseCode = (btn, code) => {
-    // Reemplazar \n por saltos de línea reales para copiar
+    // Reemplazar \n por saltos de línea reales para copiar correctamente
     const realCode = code.replace(/\\n/g, '\n');
+    
+    // Método moderno con Clipboard API
     navigator.clipboard.writeText(realCode).then(() => {
         const originalHTML = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO';
@@ -1906,22 +1931,32 @@ window.copyLicenseCode = (btn, code) => {
         }, 2000);
     }).catch(err => {
         console.error('Error al copiar:', err);
-        // Fallback
+        
+        // Fallback para navegadores antiguos
         const textArea = document.createElement("textarea");
         textArea.value = realCode;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
         document.body.appendChild(textArea);
         textArea.select();
-        document.execCommand('copy');
+        
+        try {
+            document.execCommand('copy');
+            
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO';
+            btn.classList.add('copied');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
+            }, 2000);
+        } catch (err) {
+            console.error('Fallback fallido:', err);
+            openPapeletaModal("ERROR", false, null, "", "No se pudo copiar el código");
+        }
+        
         document.body.removeChild(textArea);
-        
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO';
-        btn.classList.add('copied');
-        
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.classList.remove('copied');
-        }, 2000);
     });
 };
 
@@ -2102,7 +2137,7 @@ window.confirmTransfer = async () => {
         return;
     }
     
-    openPapeletaModal("⚠️ CONFIRMAR TRANSFERENCIA", false, async () => {
+    openPapeletaModal("️ CONFIRMAR TRANSFERENCIA", false, async () => {
         console.log('✅ Confirmado! Ejecutando transferencia...');
         try {
             const licenseRef = doc(db, "licencias", licenseId);
@@ -2251,13 +2286,11 @@ function renderUserLicensesManagementList(filterText = "") {
     });
 }
 
-// Filtro de búsqueda
 window.filterUserLicenses = () => {
     const val = document.getElementById("searchUserLicenseInput").value;
     renderUserLicensesManagementList(val);
 };
 
-// Editar SOLO IP:PUERTO
 window.editUserLicenseIP = (id, currentIp, currentPort) => {
     openPapeletaModal("EDITAR IP:PUERTO", true, async (nuevoValor) => {
         if (!nuevoValor || nuevoValor.trim() === "") return;
@@ -2281,7 +2314,6 @@ window.editUserLicenseIP = (id, currentIp, currentPort) => {
     }, `${currentIp}:${currentPort}`, "Nueva IP:PUERTO:");
 };
 
-// Activar / Desactivar licencia
 window.toggleUserLicenseStatus = async (id, currentStatus) => {
     try {
         await updateDoc(doc(db, "licencias", id), { active: !currentStatus });
@@ -2292,7 +2324,6 @@ window.toggleUserLicenseStatus = async (id, currentStatus) => {
     }
 };
 
-// Borrar licencia
 window.deleteUserLicense = (id) => {
     const lic = licensesData.find(l => l.id === id);
     openPapeletaModal("️ CONFIRMAR", false, async () => {
