@@ -1779,15 +1779,12 @@ window.closeEncryptPanel = () => {
     } catch (e) { console.error(e); }
 };
 
-// ==================== PANEL DE LICENCIAS DEL USUARIO ====================
-
 function renderUserLicenses() {
     const panel = document.getElementById("userLicensesPanel");
     const list = document.getElementById("userLicensesList");
     
     if (!currentUser || !list) return;
     
-    // Filtrar licencias donde el USER coincida con el username del usuario actual
     const userLicenses = licensesData.filter(l => {
         return l.user && l.user.toLowerCase() === currentUser.username.toLowerCase();
     });
@@ -1815,7 +1812,9 @@ function renderUserLicenses() {
         const resourceValue = lic.resource || 'Sin Nombre';
         const ipValue = lic.ip || 'N/A';
         const portValue = lic.port || 'N/A';
-        const driveLinkValue = lic.driveLink || null;  // Obtener el link
+        
+        // Asegurar que driveLink exista
+        const driveLinkValue = lic.driveLink || null;
         
         const luaCode = `-- Sistema: ${resourceValue}
 configLicense = {
@@ -1823,14 +1822,19 @@ configLicense = {
     ["Key"] = "${keyValue}"
 }`;
         
-        // Botón de descarga al lado del estado
-        const downloadButtonHtml = driveLinkValue ? 
-            `<button class="btn-download" onclick="window.open('${driveLinkValue}', '_blank')" title="Descargar recurso" style="margin-right:0.75rem;">
-                <i class="fa-solid fa-download"></i>
-            </button>` : 
-            `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', '📁 Esta licencia no tiene enlace de descarga')" title="Sin enlace" style="margin-right:0.75rem; opacity:0.3; cursor:not-allowed;">
+        // Crear el botón de descarga SIEMPRE
+        let downloadBtn = '';
+        if (driveLinkValue && driveLinkValue.trim() !== '') {
+            // Tiene enlace - botón activo
+            downloadBtn = `<button class="btn-download" onclick="window.open('${driveLinkValue}', '_blank')" title="Descargar recurso" style="margin-right:0.75rem;">
                 <i class="fa-solid fa-download"></i>
             </button>`;
+        } else {
+            // No tiene enlace - botón deshabilitado con mensaje
+            downloadBtn = `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', '📁 Esta licencia no tiene enlace de descarga')" title="Sin enlace" style="margin-right:0.75rem;">
+                <i class="fa-solid fa-download"></i>
+            </button>`;
+        }
         
         const card = document.createElement("div");
         card.className = "user-license-card";
@@ -1841,12 +1845,11 @@ configLicense = {
                     ${resourceValue}
                 </div>
                 <div style="display:flex; align-items:center;">
-                    ${downloadButtonHtml}
+                    ${downloadBtn}
                     <span class="user-license-status ${statusClass}">${statusText}</span>
                 </div>
             </div>
             
-            <!-- CAMPO IP:PUERTO CON BOTÓN EDITAR -->
             <div class="user-license-field" style="justify-content: space-between;">
                 <div style="display:flex; align-items:center; gap:1rem; flex:1;">
                     <span class="user-license-label">
