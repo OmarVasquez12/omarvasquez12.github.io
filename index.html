@@ -1075,6 +1075,42 @@
             border: none; background: transparent;
         }
 
+        /* ESTILOS PARA BOTONES DE DESCARGA */
+        .btn-download {
+            background: rgba(88,101,242,0.2);
+            border: 1px solid var(--discord-blue);
+            color: var(--discord-blue);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-download:hover {
+            background: var(--discord-blue);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(88,101,242,0.4);
+        }
+
+        .btn-download-disabled {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
         footer {
             border-top: 1px solid var(--border-color);
             background: rgba(0,0,0,0.5);
@@ -1441,6 +1477,17 @@
                         <input type="text" id="ipAddr" placeholder="Ej: 45.126.209.194:22204">
                         <div class="input-hint">El puerto es obligatorio y único para cada licencia</div>
                     </div>
+                    
+                    <!-- CAMPO GOOGLE DRIVE -->
+                    <div class="input-group">
+                        <label style="display:flex; align-items:center; gap:0.5rem;">
+                            <input type="checkbox" id="enableDriveLink" style="width:auto; accent-color:var(--primary);">
+                            <span>Enlace de Google Drive</span>
+                        </label>
+                        <input type="text" id="driveLink" placeholder="https://drive.google.com/..." style="margin-top:0.5rem;" disabled>
+                        <div class="input-hint">Opcional: Enlace de descarga del recurso</div>
+                    </div>
+                    
                     <button class="btn-generate" onclick="addLicense()">
                         <i class="fa-solid fa-bolt"></i> Generar y Activar
                     </button>
@@ -1491,5 +1538,22 @@
 </div>
 
 <script type="module" src="script.js"></script>
+
+<!-- Script para toggle de Google Drive -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const enableDriveCheckbox = document.getElementById('enableDriveLink');
+    const driveLinkInput = document.getElementById('driveLink');
+    
+    if (enableDriveCheckbox && driveLinkInput) {
+        enableDriveCheckbox.addEventListener('change', function() {
+            driveLinkInput.disabled = !this.checked;
+            if (!this.checked) {
+                driveLinkInput.value = '';
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>
