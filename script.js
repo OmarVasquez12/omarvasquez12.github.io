@@ -1,62 +1,48 @@
 // =============================================
-//          CONFIGURACIÓN TELEGRAM 
-// =============================================
-const TELEGRAM_BOT_TOKEN = "TU_BOT_TOKEN_AQUI"; 
-const TELEGRAM_CHAT_ID = "TU_CHAT_ID_AQUI";     
-
-async function sendTelegramNotification(message) {
-    if (TELEGRAM_BOT_TOKEN === "TU_BOT_TOKEN_AQUI") return;
-    
-    try {
-        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CHAT_ID,
-                text: message,
-                parse_mode: 'HTML'
-            })
-        });
-    } catch (error) {
-        console.error('Error enviando notificación a Telegram:', error);
-    }
-}
-
-// =============================================
 //          BLOQUEO DEVTOOLS MEJORADO
 // =============================================
-if (typeof DisableDevtool === 'function') {
-    DisableDevtool({
-        ondevtoolopen: function () {
-            openPapeletaModal('ACCESO DENEGADO', false, null, '', 'Herramientas de desarrollador detectadas.\nLa página se recargará en 3 segundos.');
-            setTimeout(() => { location.reload(true); }, 3000);
-        },
-        clearIntervalWhenDevOpen: true,
-        disableMenu: true,
-        ignore: []
-    });
+
+function triggerDevToolsBlock() {
+    document.body.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000000; color: #ff0000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999999; font-family: 'Arial Black', sans-serif; text-align: center; padding: 20px;">
+            <h1 style="font-size: 5vw; margin: 0; text-shadow: 0 0 30px #ff0000; animation: pulse 1s infinite alternate;">
+                DIME TE LA QUIERE ROBAR ASI MIO
+            </h1>
+            <p style="color: #ffffff; font-size: 1.5rem; margin-top: 30px; opacity: 0.8;">
+                Herramientas de desarrollador detectadas.
+            </p>
+        </div>
+        <style>
+            @keyframes pulse {
+                from { transform: scale(1); text-shadow: 0 0 20px #ff0000; }
+                to { transform: scale(1.05); text-shadow: 0 0 50px #ff0000; }
+            }
+        </style>
+    `;
+    setTimeout(() => { window.location.href = "about:blank"; }, 3000);
 }
 
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); showDevWarning(); return false; }
-    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); showDevWarning(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); showDevWarning(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); showDevWarning(); return false; }
+    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); triggerDevToolsBlock(); return false; }
+    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); triggerDevToolsBlock(); return false; }
+    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); triggerDevToolsBlock(); return false; }
+    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); return false; }
 }, true);
 
-function showDevWarning() {
-    openPapeletaModal('PROHIBIDO', false, null, '', 'Esta funcion esta bloqueada por (PapeletaProgrmado)');
-}
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
 
 setInterval(() => {
     const start = performance.now();
     debugger;
     const end = performance.now();
-    if (end - start > 80) { 
-        document.body.innerHTML = '<div style="position:fixed;inset:0;background:#000;color:#f00;font-size:48px;text-align:center;padding-top:30vh;z-index:99999;">DEVTOOLS DETECTADO<br>ACCESO BLOQUEADO</div>';
-    }
-}, 400);
+    if (end - start > 80) { triggerDevToolsBlock(); }
+}, 500);
+
+setInterval(() => {
+    const widthThreshold = window.outerWidth - window.innerWidth > 160;
+    const heightThreshold = window.outerHeight - window.innerHeight > 160;
+    if (widthThreshold || heightThreshold) { triggerDevToolsBlock(); }
+}, 1000);
 
 // =============================================
 //          PARTÍCULAS
@@ -306,7 +292,7 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
             thumbnail: { url: avatarUrl },
             fields: [
                 { name: '👤 Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
-                { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
+                { name: ' ID', value: `\`${user.id}\``, inline: true },
                 { name: ' Rol', value: roleNames[role] || role.toUpperCase(), inline: true },
                 { name: '💻 Serial PC', value: `\`${pcSerial.serial}\``, inline: false },
                 { name: '🌐 Navegador', value: `\`\`\`${navigator.userAgent.substring(0, 100)}...\`\`\``, inline: false },
@@ -476,9 +462,6 @@ async function fetchDiscordUser(token) {
     
     const pcSerial = await generatePCSerial();
     localStorage.setItem('papeleta_pc_serial', pcSerial.serial);
-    
-    const telegramMsg = `🔔 <b>NUEVO ACCESO DETECTADO</b>\n\n <b>Usuario:</b> ${user.username}\n🆔 <b>ID:</b> ${user.id}\n💻 <b>Serial PC:</b> ${pcSerial.serial}\n <b>IP:</b> ${await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=> 'N/A')}`;
-    sendTelegramNotification(telegramMsg);
     
     await checkUserAuthorization(user, pcSerial);
 }
@@ -1346,7 +1329,7 @@ window.editLink = (linkId) => {
 };
 
 window.deleteLink = (linkId) => {
-    openPapeletaModal("⚠️ ELIMINAR LINK", false, async () => {
+    openPapeletaModal("️ ELIMINAR LINK", false, async () => {
         try {
             await deleteDoc(doc(db, "links", linkId));
             openPapeletaModal("✅ ÉXITO", false, null, "", "Link eliminado");
@@ -1555,7 +1538,7 @@ end, true, "high")`;
 // ============================================================
 window.addLicense = async () => {
     if (!currentFolder) {
-        return openPapeletaModal("ERROR", false, null, "", "⚠️ SELECCIONA UNA CARPETA PRIMERO");
+        return openPapeletaModal("ERROR", false, null, "", "️ SELECCIONA UNA CARPETA PRIMERO");
     }
     
     const resource = document.getElementById("resourceName").value.trim();
