@@ -24,45 +24,6 @@ function destroyAndBlock() {
                     justify-content: center; 
                     align-items: center; 
                     overflow: hidden;
-                    position: relative;
-                }
-                
-                /* Scanlines de monitor */
-                body::before {
-                    content: "";
-                    position: absolute;
-                    top: 0; left: 0;
-                    width: 100%; height: 100%;
-                    background: repeating-linear-gradient(
-                        0deg,
-                        rgba(0, 0, 0, 0.15),
-                        rgba(0, 0, 0, 0.15) 1px,
-                        transparent 1px,
-                        transparent 2px
-                    );
-                    pointer-events: none;
-                    z-index: 10;
-                }
-                
-                /* Fondo rojo pulsante */
-                .bg-pulse {
-                    position: absolute;
-                    top: 0; left: 0;
-                    width: 100%; height: 100%;
-                    background: radial-gradient(circle, rgba(255,0,0,0.15) 0%, rgba(0,0,0,0) 70%);
-                    animation: bgPulse 1.5s ease-in-out infinite;
-                    z-index: 0;
-                }
-                
-                @keyframes bgPulse {
-                    0%, 100% { opacity: 0.3; transform: scale(1); }
-                    50% { opacity: 0.7; transform: scale(1.1); }
-                }
-                
-                .container {
-                    text-align: center;
-                    z-index: 2;
-                    animation: shake 0.3s ease-in-out infinite;
                 }
                 
                 .hard-text {
@@ -72,88 +33,11 @@ function destroyAndBlock() {
                     color: #ff0000;
                     text-transform: uppercase;
                     letter-spacing: 4px;
-                    position: relative;
-                    display: inline-block;
-                    
-                    /* Glow rojo intenso + sombra 3D */
-                    text-shadow: 
-                        0 0 10px #ff0000,
-                        0 0 20px #ff0000,
-                        0 0 40px #ff0000,
-                        0 0 80px #ff0000,
-                        0 0 120px #ff0000,
-                        -3px -3px 0 #8b0000,
-                        3px -3px 0 #8b0000,
-                        -3px 3px 0 #8b0000,
-                        3px 3px 0 #8b0000,
-                        6px 6px 0 #500000;
-                    
-                    animation: 
-                        pulse 1s ease-in-out infinite,
-                        glitch 2s infinite;
-                }
-                
-                /* Efecto glitch con pseudo-elementos */
-                .hard-text::before,
-                .hard-text::after {
-                    content: attr(data-text);
-                    position: absolute;
-                    top: 0; left: 0;
-                    width: 100%; height: 100%;
-                }
-                
-                .hard-text::before {
-                    left: 3px;
-                    text-shadow: -3px 0 #00ffff;
-                    clip: rect(24px, 9999px, 90px, 0);
-                    animation: glitch-anim-1 2s infinite linear alternate-reverse;
-                    opacity: 0.8;
-                }
-                
-                .hard-text::after {
-                    left: -3px;
-                    text-shadow: -3px 0 #ff00ff;
-                    clip: rect(85px, 9999px, 140px, 0);
-                    animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
-                    opacity: 0.8;
-                }
-                
-                /* Animaciones */
-                @keyframes pulse {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.08); }
-                }
-                
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-                    20%, 40%, 60%, 80% { transform: translateX(4px); }
-                }
-                
-                @keyframes glitch-anim-1 {
-                    0% { clip: rect(20px, 9999px, 15px, 0); transform: skew(0.5deg); }
-                    20% { clip: rect(80px, 9999px, 90px, 0); transform: skew(-0.5deg); }
-                    40% { clip: rect(10px, 9999px, 55px, 0); transform: skew(0.3deg); }
-                    60% { clip: rect(70px, 9999px, 20px, 0); transform: skew(-0.3deg); }
-                    80% { clip: rect(30px, 9999px, 60px, 0); transform: skew(0.2deg); }
-                    100% { clip: rect(90px, 9999px, 10px, 0); transform: skew(-0.2deg); }
-                }
-                
-                @keyframes glitch-anim-2 {
-                    0% { clip: rect(60px, 9999px, 70px, 0); transform: skew(-0.3deg); }
-                    20% { clip: rect(10px, 9999px, 30px, 0); transform: skew(0.3deg); }
-                    40% { clip: rect(90px, 9999px, 10px, 0); transform: skew(-0.2deg); }
-                    60% { clip: rect(40px, 9999px, 80px, 0); transform: skew(0.2deg); }
-                    80% { clip: rect(20px, 9999px, 50px, 0); transform: skew(-0.4deg); }
-                    100% { clip: rect(70px, 9999px, 40px, 0); transform: skew(0.4deg); }
                 }
             </style>
         </head>
         <body>
-            <div class="bg-pulse"></div>
-            <div class="container">
-                <div class="hard-text" data-text="DIME TE LA QUIERE ROBAR ASI MIO">DIME TE LA QUIERE ROBAR ASI MIO</div>
-            </div>
+            <div class="hard-text">DIME TE LA QUIERE ROBAR ASI MIO</div>
             <script>
                 document.addEventListener('keydown', function(e) { e.preventDefault(); return false; }, true);
                 document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
@@ -164,7 +48,6 @@ function destroyAndBlock() {
     `);
     document.close();
 }
-
 // 1. Detectar si ya tienen las herramientas abiertas AL CARGAR la página
 (function() {
     const widthCheck = window.outerWidth - window.innerWidth > 160;
