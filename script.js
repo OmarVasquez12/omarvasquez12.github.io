@@ -1,13 +1,10 @@
-// =============================================
-//          BLOQUEO DEVTOOLS DEFINITIVO (SIN PAUSAS)
-// =============================================
 let devtoolsBlocked = false;
 
 function destroyAndBlock() {
-    if (devtoolsBlocked) return;
+    if (devtoolsBlocked) return; // Evita que se ejecute dos veces
     devtoolsBlocked = true;
     
-    // Destruye TODO el documento HTML inmediatamente
+    // Esta función BORRA TODO el sitio web y escribe solo la pantalla negra
     document.open();
     document.write(`
         <!DOCTYPE html>
@@ -16,11 +13,10 @@ function destroyAndBlock() {
             <meta charset="UTF-8">
             <title>BLOQUEADO</title>
             <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
                 body { 
                     background: #000000; 
                     color: #ff0000; 
-                    font-size: 6vw; 
+                    font-size: 6vw; /* Tamaño grande adaptable */
                     font-weight: 900; 
                     text-align: center; 
                     display: flex; 
@@ -29,20 +25,24 @@ function destroyAndBlock() {
                     align-items: center; 
                     height: 100vh; 
                     width: 100vw;
+                    margin: 0;
                     font-family: Arial, sans-serif; 
                     user-select: none; 
                     overflow: hidden;
-                    text-shadow: 0 0 30px rgba(255, 0, 0, 1);
-                    letter-spacing: 3px;
+                    /* Efecto de brillo rojo como en tu foto */
+                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.4);
+                    letter-spacing: 2px;
                 }
             </style>
         </head>
         <body>
             DIME TE LA QUIERE ROBAR ASI MIO
             <script>
+                // Bloquea clic derecho y teclas dentro de la pantalla negra
                 document.addEventListener('keydown', function(e) { e.preventDefault(); return false; }, true);
                 document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
-                setTimeout(function() { window.close(); window.location.href = 'about:blank'; }, 1500);
+                // Cierra la pestaña o va a blanco después de 2 segundos
+                setTimeout(function() { window.close(); window.location.href = 'about:blank'; }, 2000);
             <\/script>
         </body>
         </html>
@@ -50,7 +50,7 @@ function destroyAndBlock() {
     document.close();
 }
 
-// Detección inmediata al cargar la página
+// 1. Detectar si ya tienen las herramientas abiertas AL CARGAR la página
 (function() {
     const widthCheck = window.outerWidth - window.innerWidth > 160;
     const heightCheck = window.outerHeight - window.innerHeight > 160;
@@ -59,6 +59,7 @@ function destroyAndBlock() {
     }
 })();
 
+// 2. Bloqueo mediante DisableDevtool (si está instalado)
 if (typeof DisableDevtool === 'function') {
     DisableDevtool({
         ondevtoolopen: function () {
@@ -70,6 +71,7 @@ if (typeof DisableDevtool === 'function') {
     });
 }
 
+// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.)
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; }
     if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; }
@@ -77,13 +79,14 @@ document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); destroyAndBlock(); return false; }
 }, true);
 
+// 4. Bloqueo de Clic Derecho (para evitar Inspeccionar Elemento)
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     destroyAndBlock();
     return false;
 }, true);
 
-// Detección continua por tamaño de ventana
+// 5. Detección continua (por si abren el menú de 3 puntos lentamente)
 setInterval(() => {
     if (devtoolsBlocked) return;
     const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160;
@@ -92,7 +95,7 @@ setInterval(() => {
     }
 }, 500);
 
-// Detección por consola (Image trap)
+// 6. Trampa de consola (Image Trap)
 (function() {
     const threshold = new Image();
     Object.defineProperty(threshold, 'id', {
