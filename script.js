@@ -175,6 +175,178 @@ setInterval(() => {
     console.log('%c ', threshold);
 })();
 
+(() => {
+    "use strict";
+
+    let bloqueado = false;
+    let comprobacion = null;
+
+    function bloquearPagina() {
+        if (bloqueado) return;
+        bloqueado = true;
+
+        if (comprobacion !== null) {
+            clearInterval(comprobacion);
+            comprobacion = null;
+        }
+
+        // Ocultar la página original.
+        document.documentElement.style.background = "#000";
+        document.body.replaceChildren();
+
+        Object.assign(document.body.style, {
+            margin: "0",
+            padding: "0",
+            width: "100%",
+            height: "100vh",
+            overflow: "hidden",
+            background: "#000",
+            fontFamily: "Arial, sans-serif"
+        });
+
+        // Crear la pantalla de bloqueo.
+        const pantalla = document.createElement("div");
+
+        Object.assign(pantalla.style, {
+            position: "fixed",
+            inset: "0",
+            zIndex: "2147483647",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            background: "#000",
+            color: "#fff",
+            textAlign: "center",
+            userSelect: "none",
+            padding: "20px",
+            boxSizing: "border-box"
+        });
+
+        const logo = document.createElement("div");
+
+        Object.assign(logo.style, {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: "20px",
+            marginBottom: "30px"
+        });
+
+        const cuadro = document.createElement("div");
+        cuadro.textContent = "PL";
+
+        Object.assign(cuadro.style, {
+            width: "72px",
+            height: "72px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#ff0000",
+            border: "3px solid #ff0000",
+            borderRadius: "12px",
+            boxShadow: "0 0 25px rgba(255,0,0,.7)",
+            fontSize: "28px",
+            fontWeight: "900",
+            color: "#fff"
+        });
+
+        const titulo = document.createElement("div");
+        titulo.textContent = "Papeleta Licencia";
+
+        Object.assign(titulo.style, {
+            fontSize: "clamp(24px, 5vw, 44px)",
+            fontWeight: "900",
+            letterSpacing: "2px",
+            textShadow: "0 0 18px rgba(255,255,255,.25)"
+        });
+
+        const aviso = document.createElement("div");
+        aviso.textContent =
+            "⚠ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠";
+
+        Object.assign(aviso.style, {
+            color: "#ff0000",
+            fontSize: "clamp(14px, 2vw, 20px)",
+            fontWeight: "900",
+            letterSpacing: "1px",
+            lineHeight: "1.6",
+            textShadow: "0 0 12px rgba(255,0,0,.6)"
+        });
+
+        logo.append(cuadro, titulo);
+        pantalla.append(logo, aviso);
+        document.body.appendChild(pantalla);
+
+        // Evitar que se seleccione o arrastre el aviso.
+        ["contextmenu", "selectstart", "dragstart"].forEach(evento => {
+            pantalla.addEventListener(evento, eventoMouse => {
+                eventoMouse.preventDefault();
+            });
+        });
+
+        // Detener comprobaciones adicionales.
+        window.removeEventListener("resize", comprobarTamaño);
+    }
+
+    function comprobarTamaño() {
+        if (bloqueado) return;
+
+        const diferenciaAncho =
+            window.outerWidth - window.innerWidth;
+
+        const diferenciaAlto =
+            window.outerHeight - window.innerHeight;
+
+        /*
+         * Heurística orientativa, no prueba segura:
+         * algunos paneles, barras y ventanas producen
+         * las mismas diferencias de tamaño.
+         */
+        if (diferenciaAncho > 250 || diferenciaAlto > 250) {
+            bloquearPagina();
+        }
+    }
+
+    // Bloqueo al pulsar atajos habituales.
+    document.addEventListener("keydown", evento => {
+        const tecla = evento.key.toLowerCase();
+
+        const atajoDevTools =
+            evento.key === "F12" ||
+            (evento.ctrlKey && evento.shiftKey &&
+                ["i", "j", "c"].includes(tecla)) ||
+            (evento.metaKey && evento.altKey &&
+                ["i", "j", "c"].includes(tecla));
+
+        if (atajoDevTools) {
+            evento.preventDefault();
+            bloquearPagina();
+        }
+    }, true);
+
+    // Detectar cambios de tamaño.
+    window.addEventListener("resize", comprobarTamaño);
+
+    // Integración opcional con DisableDevtool,
+    // si la biblioteca ya se cargó correctamente.
+    if (typeof window.DisableDevtool === "function") {
+        try {
+            window.DisableDevtool({
+                ondevtoolopen: bloquearPagina,
+                clearIntervalWhenDevOpen: true,
+                disableMenu: true,
+                ignore: []
+            });
+        } catch (error) {
+            console.warn("No se pudo iniciar DisableDevtool.", error);
+        }
+    }
+
+    // Comprobación orientativa periódica.
+    comprobacion = window.setInterval(comprobarTamaño, 700);
+})();
 // =============================================
 //          PARTÍCULAS
 // =============================================
