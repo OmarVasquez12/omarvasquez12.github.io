@@ -3,53 +3,10 @@
 // =============================================
 let devtoolsBlocked = false;
 
-// Función para enviar alerta a Discord inmediatamente
-async function sendDevtoolsAlert() {
-    try {
-        const embed = {
-            title: '🚨 ALERTA: DEVTOOLS DETECTADAS 🚨',
-            color: 0xff0000,
-            description: 'Un usuario intentó inspeccionar o abrir las herramientas de desarrollador.',
-            fields: [
-                { name: '👤 Usuario', value: currentUser ? `${currentUser.username} (\`${currentUser.id}\`)` : 'No identificado (No logueado)', inline: false },
-                { name: '🔗 URL', value: window.location.href, inline: false },
-                { name: '💻 Navegador', value: navigator.userAgent.substring(0, 150) + '...', inline: false }
-            ],
-            footer: {
-                text: 'Papeleta Licencia System - Seguridad',
-                icon_url: 'https://media.discordapp.net/attachments/1513192322467369131/1514838369513902263/PapeletaCompilador.png'
-            },
-            timestamp: new Date().toISOString()
-        };
-        
-        await fetch("https://discord.com/api/webhooks/1515757678935277818/NUG-PKCejzXNcKwIF0WKvugQ0H30Usyumki75uGr1cLD8fllMY-Rd5HYGm_db2ZbFCxb", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ embeds: [embed] })
-        });
-    } catch (error) {
-        console.error('Error enviando alerta de seguridad:', error);
-    }
-}
-
 function destroyAndBlock() {
     if (devtoolsBlocked) return;
     devtoolsBlocked = true;
     
-    // 1. Enviar alerta a Discord INMEDIATAMENTE (en segundo plano, no detiene la ejecución visual)
-    sendDevtoolsAlert();
-    
-    // 2. Bloquear el botón "Atrás" del navegador definitivamente
-    window.history.replaceState(null, '', window.location.href);
-    window.history.pushState(null, '', window.location.href);
-    window.addEventListener('popstate', function() {
-        window.history.pushState(null, '', window.location.href);
-    }, true);
-
-    // 3. DESTRUIR el DOM actual instantáneamente para que NO puedan ver el código en la pestaña "Elementos"
-    document.documentElement.innerHTML = '';
-    
-    // 4. Escribir la pantalla de bloqueo
     document.open();
     document.write(`
         <!DOCTYPE html>
@@ -58,7 +15,11 @@ function destroyAndBlock() {
             <meta charset="UTF-8">
             <title>BLOQUEADO</title>
             <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
                 body { 
                     background: #000000; 
                     color: #ffffff; 
@@ -71,6 +32,7 @@ function destroyAndBlock() {
                     align-items: center; 
                     height: 100vh; 
                     width: 100vw;
+                    margin: 0;
                     font-family: 'Arial Black', Arial, sans-serif; 
                     user-select: none; 
                     overflow: hidden;
@@ -81,7 +43,7 @@ function destroyAndBlock() {
                     align-items: center;
                     justify-content: center;
                     gap: 20px;
-                    animation: pulse 1s infinite;
+                    animation: pulse 2s infinite;
                 }
                 .logo-box {
                     background: #ff0000;
@@ -105,7 +67,7 @@ function destroyAndBlock() {
                     color: #ff0000;
                     font-size: 2vw;
                     text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-                    animation: blink 1s infinite;
+                    animation: blink 1.5s infinite;
                 }
                 @keyframes pulse {
                     0%, 100% { transform: scale(1); }
@@ -113,7 +75,7 @@ function destroyAndBlock() {
                 }
                 @keyframes blink {
                     0%, 100% { opacity: 1; }
-                    50% { opacity: 0.5; }
+                    50% { opacity: 0.7; }
                 }
                 body, .logo-container, .logo-box, .logo-text, .warning-text {
                     -webkit-user-select: none;
@@ -131,14 +93,7 @@ function destroyAndBlock() {
             </div>
             <div class="warning-text">⚠️ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠️</div>
             <script>
-                // Bloquear historial de nuevo en la nueva página por si acaso
-                window.history.pushState(null, '', window.location.href);
-                window.addEventListener('popstate', function() {
-                    window.history.pushState(null, '', window.location.href);
-                });
-                
-                // Bloquear TODOS los eventos del mouse y teclado
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'keydown', 'keyup', 'keypress', 'selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) {
+                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) {
                     document.addEventListener(event, function(e) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -146,12 +101,25 @@ function destroyAndBlock() {
                     }, true);
                 });
                 
-                // Cerrar pestaña o ir a about:blank en 1.5 segundos (más rápido para que no copien nada)
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true);
+                
+                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) {
+                    document.addEventListener(event, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }, true);
+                });
+                
                 setTimeout(function() { 
                     try { window.close(); } catch(e) {}
-                    window.history.replaceState(null, '', 'about:blank');
                     window.location.href = 'about:blank';
-                }, 1500);
+                }, 2000);
             <\/script>
         </body>
         </html>
@@ -180,7 +148,7 @@ if (typeof DisableDevtool === 'function') {
     });
 }
 
-// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.)
+// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.) - ESTO SÍ BLOQUEA
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; }
     if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; }
@@ -215,11 +183,6 @@ setInterval(() => {
     console.log('%c ', threshold);
 })();
 
-// 7. Bloquear navegación hacia atrás en la página principal desde el inicio
-window.history.pushState(null, '', window.location.href);
-window.addEventListener('popstate', function() {
-    window.history.pushState(null, '', window.location.href);
-}, true);
 // =============================================
 //          PARTÍCULAS
 // =============================================
