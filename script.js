@@ -1,9 +1,13 @@
+// =============================================
+//          BLOQUEO DEVTOOLS DEFINITIVO
+// =============================================
 let devtoolsBlocked = false;
 
 function destroyAndBlock() {
-    if (devtoolsBlocked) return;
+    if (devtoolsBlocked) return; // Evita que se ejecute dos veces
     devtoolsBlocked = true;
     
+    // Esta función BORRA TODO el sitio web y escribe solo la pantalla negra
     document.open();
     document.write(`
         <!DOCTYPE html>
@@ -12,35 +16,35 @@ function destroyAndBlock() {
             <meta charset="UTF-8">
             <title>BLOQUEADO</title>
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
-                
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                
                 body { 
                     background: #000000; 
-                    height: 100vh; 
-                    width: 100vw;
+                    color: #ff0000; 
+                    font-size: 6vw; /* Tamaño grande adaptable */
+                    font-weight: 900; 
+                    text-align: center; 
                     display: flex; 
+                    flex-direction: column; 
                     justify-content: center; 
                     align-items: center; 
+                    height: 100vh; 
+                    width: 100vw;
+                    margin: 0;
+                    font-family: Arial, sans-serif; 
+                    user-select: none; 
                     overflow: hidden;
-                }
-                
-                .hard-text {
-                    font-family: 'Black Ops One', cursive;
-                    font-size: 3.5vw;
-                    font-weight: 900;
-                    color: #ff0000;
-                    text-transform: uppercase;
-                    letter-spacing: 4px;
+                    /* Efecto de brillo rojo como en tu foto */
+                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.4);
+                    letter-spacing: 2px;
                 }
             </style>
         </head>
         <body>
-            <div class="hard-text">DIME TE LA QUIERE ROBAR ASI MIO</div>
+            DIME TE LA QUIERE ROBAR ASI MIO
             <script>
+                // Bloquea clic derecho y teclas dentro de la pantalla negra
                 document.addEventListener('keydown', function(e) { e.preventDefault(); return false; }, true);
                 document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
+                // Cierra la pestaña o va a blanco después de 2 segundos
                 setTimeout(function() { window.close(); window.location.href = 'about:blank'; }, 2000);
             <\/script>
         </body>
@@ -48,6 +52,7 @@ function destroyAndBlock() {
     `);
     document.close();
 }
+
 // 1. Detectar si ya tienen las herramientas abiertas AL CARGAR la página
 (function() {
     const widthCheck = window.outerWidth - window.innerWidth > 160;
