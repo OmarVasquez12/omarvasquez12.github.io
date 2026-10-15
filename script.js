@@ -7,6 +7,9 @@ function destroyAndBlock() {
     if (devtoolsBlocked) return;
     devtoolsBlocked = true;
     
+    // Reemplazar el historial para que no pueda volver atrás
+    window.history.replaceState(null, '', window.location.href);
+    
     document.open();
     document.write(`
         <!DOCTYPE html>
@@ -93,6 +96,13 @@ function destroyAndBlock() {
             </div>
             <div class="warning-text">⚠️ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠️</div>
             <script>
+                // Bloquear el botón "atrás" del navegador
+                window.history.pushState(null, '', window.location.href);
+                window.addEventListener('popstate', function() {
+                    window.history.pushState(null, '', window.location.href);
+                });
+                
+                // Bloquear todos los eventos del mouse
                 ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) {
                     document.addEventListener(event, function(e) {
                         e.preventDefault();
@@ -101,6 +111,7 @@ function destroyAndBlock() {
                     }, true);
                 });
                 
+                // Bloquear teclado
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return;
                     e.preventDefault();
@@ -108,6 +119,7 @@ function destroyAndBlock() {
                     return false;
                 }, true);
                 
+                // Prevenir selección y copiar
                 ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) {
                     document.addEventListener(event, function(e) {
                         e.preventDefault();
@@ -116,8 +128,13 @@ function destroyAndBlock() {
                     }, true);
                 });
                 
+                // Cierra la pestaña después de 2 segundos y va a about:blank
                 setTimeout(function() { 
-                    try { window.close(); } catch(e) {}
+                    try { 
+                        window.close(); 
+                    } catch(e) {}
+                    // Reemplazar historial antes de ir a about:blank
+                    window.history.replaceState(null, '', 'about:blank');
                     window.location.href = 'about:blank';
                 }, 2000);
             <\/script>
@@ -148,7 +165,7 @@ if (typeof DisableDevtool === 'function') {
     });
 }
 
-// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.) - ESTO SÍ BLOQUEA
+// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.)
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; }
     if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; }
@@ -182,6 +199,13 @@ setInterval(() => {
     });
     console.log('%c ', threshold);
 })();
+
+// 7. Bloquear navegación hacia atrás en la página principal
+window.history.pushState(null, '', window.location.href);
+window.addEventListener('popstate', function() {
+    window.history.pushState(null, '', window.location.href);
+});
+
 // =============================================
 //          PARTÍCULAS
 // =============================================
