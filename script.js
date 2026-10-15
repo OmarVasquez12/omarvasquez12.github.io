@@ -1,48 +1,50 @@
-// =============================================
-//          BLOQUEO DEVTOOLS MEJORADO
-// =============================================
 
-function triggerDevToolsBlock() {
+// =============================================
+//          BLOQUEO DEVTOOLS MEJORADO (PANTALLA NEGRA)
+// =============================================
+function showDevToolsBlockScreen() {
+    // Reemplaza TODO el contenido del body para que no se vea NADA de la pantalla anterior
     document.body.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000000; color: #ff0000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999999; font-family: 'Arial Black', sans-serif; text-align: center; padding: 20px;">
-            <h1 style="font-size: 5vw; margin: 0; text-shadow: 0 0 30px #ff0000; animation: pulse 1s infinite alternate;">
-                DIME TE LA QUIERE ROBAR ASI MIO
-            </h1>
-            <p style="color: #ffffff; font-size: 1.5rem; margin-top: 30px; opacity: 0.8;">
-                Herramientas de desarrollador detectadas.
-            </p>
+        <div style="position: fixed; inset: 0; background: #000000; color: #ff0000; font-size: 5vw; font-weight: 900; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999999; font-family: Arial, sans-serif; user-select: none; pointer-events: none; text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);">
+            DIME TE LA QUIERE ROBAR ASI MIO
         </div>
-        <style>
-            @keyframes pulse {
-                from { transform: scale(1); text-shadow: 0 0 20px #ff0000; }
-                to { transform: scale(1.05); text-shadow: 0 0 50px #ff0000; }
-            }
-        </style>
     `;
-    setTimeout(() => { window.location.href = "about:blank"; }, 3000);
+}
+
+if (typeof DisableDevtool === 'function') {
+    DisableDevtool({
+        ondevtoolopen: function () {
+            showDevToolsBlockScreen();
+        },
+        clearIntervalWhenDevOpen: true,
+        disableMenu: true,
+        ignore: []
+    });
 }
 
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); triggerDevToolsBlock(); return false; }
-    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); triggerDevToolsBlock(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); triggerDevToolsBlock(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); return false; }
+    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); showDevToolsBlockScreen(); return false; }
+    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); showDevToolsBlockScreen(); return false; }
+    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); showDevToolsBlockScreen(); return false; }
+    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); showDevToolsBlockScreen(); return false; }
 }, true);
 
-document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
+// Bloqueo adicional del clic derecho para evitar que usen "Inspeccionar elemento"
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    showDevToolsBlockScreen();
+    return false;
+}, true);
 
+// Detección por tiempo de ejecución (debugger trap)
 setInterval(() => {
     const start = performance.now();
     debugger;
     const end = performance.now();
-    if (end - start > 80) { triggerDevToolsBlock(); }
-}, 500);
-
-setInterval(() => {
-    const widthThreshold = window.outerWidth - window.innerWidth > 160;
-    const heightThreshold = window.outerHeight - window.innerHeight > 160;
-    if (widthThreshold || heightThreshold) { triggerDevToolsBlock(); }
-}, 1000);
+    if (end - start > 80) { 
+        showDevToolsBlockScreen();
+    }
+}, 400);
 
 // =============================================
 //          PARTÍCULAS
@@ -292,7 +294,7 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
             thumbnail: { url: avatarUrl },
             fields: [
                 { name: '👤 Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
-                { name: ' ID', value: `\`${user.id}\``, inline: true },
+                { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
                 { name: ' Rol', value: roleNames[role] || role.toUpperCase(), inline: true },
                 { name: '💻 Serial PC', value: `\`${pcSerial.serial}\``, inline: false },
                 { name: '🌐 Navegador', value: `\`\`\`${navigator.userAgent.substring(0, 100)}...\`\`\``, inline: false },
@@ -1175,7 +1177,7 @@ window.deleteSelectedLicenses = () => {
             loadLicensesForFolder();
             sendDiscordBulkDeleteNotification(countToDelete);
         } catch (e) {
-            updateLog(` Error: ${e.message}`, true);
+            updateLog(`❌ Error: ${e.message}`, true);
             setTimeout(() => openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`), 200);
         }
     }, "", `¿Eliminar ${countToDelete} licencia(s)?`);
@@ -1329,7 +1331,7 @@ window.editLink = (linkId) => {
 };
 
 window.deleteLink = (linkId) => {
-    openPapeletaModal("️ ELIMINAR LINK", false, async () => {
+    openPapeletaModal("⚠️ ELIMINAR LINK", false, async () => {
         try {
             await deleteDoc(doc(db, "links", linkId));
             openPapeletaModal("✅ ÉXITO", false, null, "", "Link eliminado");
@@ -1538,7 +1540,7 @@ end, true, "high")`;
 // ============================================================
 window.addLicense = async () => {
     if (!currentFolder) {
-        return openPapeletaModal("ERROR", false, null, "", "️ SELECCIONA UNA CARPETA PRIMERO");
+        return openPapeletaModal("ERROR", false, null, "", "⚠️ SELECCIONA UNA CARPETA PRIMERO");
     }
     
     const resource = document.getElementById("resourceName").value.trim();
