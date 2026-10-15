@@ -1,6 +1,4 @@
-// =============================================
-//          BLOQUEO DEVTOOLS DEFINITIVO
-// =============================================
+
 let devtoolsBlocked = false;
 
 function destroyAndBlock() {
@@ -91,7 +89,7 @@ function destroyAndBlock() {
                 <div class="logo-box">PL</div>
                 <div class="logo-text">Papeleta Licencia</div>
             </div>
-            <div class="warning-text">⚠️ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠️</div>
+            <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div>
             <script>
                 ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) {
                     document.addEventListener(event, function(e) {
@@ -127,7 +125,6 @@ function destroyAndBlock() {
     document.close();
 }
 
-// 1. Detectar si ya tienen las herramientas abiertas AL CARGAR la página
 (function() {
     const widthCheck = window.outerWidth - window.innerWidth > 160;
     const heightCheck = window.outerHeight - window.innerHeight > 160;
@@ -136,7 +133,6 @@ function destroyAndBlock() {
     }
 })();
 
-// 2. Bloqueo mediante DisableDevtool (si está instalado)
 if (typeof DisableDevtool === 'function') {
     DisableDevtool({
         ondevtoolopen: function () {
@@ -148,7 +144,6 @@ if (typeof DisableDevtool === 'function') {
     });
 }
 
-// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.) - ESTO SÍ BLOQUEA
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; }
     if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; }
@@ -156,13 +151,11 @@ document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); destroyAndBlock(); return false; }
 }, true);
 
-// 4. Solo prevenir menú contextual en clic derecho - SIN BLOQUEAR LA PANTALLA
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     return false;
 }, true);
 
-// 5. Detección continua de DevTools
 setInterval(() => {
     if (devtoolsBlocked) return;
     const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160;
@@ -171,7 +164,6 @@ setInterval(() => {
     }
 }, 500);
 
-// 6. Trampa de consola (Image Trap)
 (function() {
     const threshold = new Image();
     Object.defineProperty(threshold, 'id', {
