@@ -16,10 +16,15 @@ function destroyAndBlock() {
             <meta charset="UTF-8">
             <title>BLOQUEADO</title>
             <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
                 body { 
                     background: #000000; 
-                    color: #ff0000; 
-                    font-size: 6vw; /* Tamaño grande adaptable */
+                    color: #ffffff; 
+                    font-size: 6vw;
                     font-weight: 900; 
                     text-align: center; 
                     display: flex; 
@@ -29,23 +34,118 @@ function destroyAndBlock() {
                     height: 100vh; 
                     width: 100vw;
                     margin: 0;
-                    font-family: Arial, sans-serif; 
+                    font-family: 'Arial Black', Arial, sans-serif; 
                     user-select: none; 
                     overflow: hidden;
-                    /* Efecto de brillo rojo como en tu foto */
-                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.4);
-                    letter-spacing: 2px;
+                    cursor: default;
+                }
+                .logo-container {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 20px;
+                    animation: pulse 2s infinite;
+                }
+                .logo-box {
+                    background: #ff0000;
+                    border: 3px solid #ff0000;
+                    border-radius: 12px;
+                    padding: 15px 25px;
+                    color: #ff0000;
+                    font-size: 4vw;
+                    font-weight: 900;
+                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6);
+                    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.3);
+                }
+                .logo-text {
+                    color: #ffffff;
+                    font-size: 5vw;
+                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+                    letter-spacing: 3px;
+                }
+                .warning-text {
+                    margin-top: 40px;
+                    color: #ff0000;
+                    font-size: 2vw;
+                    text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+                    animation: blink 1.5s infinite;
+                }
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+                @keyframes blink {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.7; }
+                }
+                /* Prevenir selección de texto */
+                body, .logo-container, .logo-box, .logo-text, .warning-text {
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
+                    user-select: none;
+                    -webkit-touch-callout: none;
                 }
             </style>
         </head>
-        <body>
-            DIME TE LA QUIERE ROBAR ASI MIO
+        <body oncontextmenu="return false;">
+            <div class="logo-container">
+                <div class="logo-box">PL</div>
+                <div class="logo-text">Papeleta Licencia</div>
+            </div>
+            <div class="warning-text">⚠️ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠️</div>
             <script>
-                // Bloquea clic derecho y teclas dentro de la pantalla negra
-                document.addEventListener('keydown', function(e) { e.preventDefault(); return false; }, true);
-                document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
-                // Cierra la pestaña o va a blanco después de 2 segundos
-                setTimeout(function() { window.close(); window.location.href = 'about:blank'; }, 2000);
+                // Bloquea clic derecho
+                document.addEventListener('contextmenu', function(e) { 
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    return false; 
+                }, true);
+                
+                // Bloquea clic izquierdo (pero permite que no haga nada)
+                document.addEventListener('mousedown', function(e) {
+                    if (e.button === 0) { // Click izquierdo
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }, true);
+                
+                document.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true);
+                
+                // Bloquea teclado excepto algunas teclas básicas
+                document.addEventListener('keydown', function(e) {
+                    // Permitir solo Tab y algunas teclas de navegación básicas
+                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') {
+                        return;
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true);
+                
+                // Prevenir arrastre de selección
+                document.addEventListener('selectstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                }, true);
+                
+                document.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                }, true);
+                
+                // Cierra la pestaña después de 2 segundos
+                setTimeout(function() { 
+                    try {
+                        window.close();
+                    } catch(e) {}
+                    window.location.href = 'about:blank';
+                }, 2000);
             <\/script>
         </body>
         </html>
@@ -109,7 +209,6 @@ setInterval(() => {
     });
     console.log('%c ', threshold);
 })();
-
 // =============================================
 //          PARTÍCULAS
 // =============================================
