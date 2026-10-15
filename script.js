@@ -77,7 +77,6 @@ function destroyAndBlock() {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0.7; }
                 }
-                /* Prevenir selección de texto */
                 body, .logo-container, .logo-box, .logo-text, .warning-text {
                     -webkit-user-select: none;
                     -moz-user-select: none;
@@ -87,35 +86,28 @@ function destroyAndBlock() {
                 }
             </style>
         </head>
-        <body oncontextmenu="return false;" onmousedown="return false;">
+        <body>
             <div class="logo-container">
                 <div class="logo-box">PL</div>
                 <div class="logo-text">Papeleta Licencia</div>
             </div>
             <div class="warning-text">⚠️ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠️</div>
             <script>
-                // Bloquea TODOS los eventos del mouse completamente
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'mouseover', 'mouseout'].forEach(function(event) {
+                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) {
                     document.addEventListener(event, function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        e.stopImmediatePropagation();
                         return false;
                     }, true);
                 });
                 
-                // Bloquea teclado excepto teclas básicas de navegación
                 document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') {
-                        return;
-                    }
+                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return;
                     e.preventDefault();
                     e.stopPropagation();
-                    e.stopImmediatePropagation();
                     return false;
                 }, true);
                 
-                // Prevenir selección y arrastre
                 ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) {
                     document.addEventListener(event, function(e) {
                         e.preventDefault();
@@ -124,7 +116,6 @@ function destroyAndBlock() {
                     }, true);
                 });
                 
-                // Cierra la pestaña después de 2 segundos
                 setTimeout(function() { 
                     try { window.close(); } catch(e) {}
                     window.location.href = 'about:blank';
@@ -157,7 +148,7 @@ if (typeof DisableDevtool === 'function') {
     });
 }
 
-// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.)
+// 3. Bloqueo de teclas (F12, Ctrl+Shift+I, etc.) - ESTO SÍ BLOQUEA
 document.addEventListener('keydown', function(e) {
     if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; }
     if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; }
@@ -165,14 +156,13 @@ document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); destroyAndBlock(); return false; }
 }, true);
 
-// 4. Bloqueo de Clic Derecho (para evitar Inspeccionar Elemento)
+// 4. Solo prevenir menú contextual en clic derecho - SIN BLOQUEAR LA PANTALLA
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
-    destroyAndBlock();
     return false;
 }, true);
 
-// 5. Detección continua (por si abren el menú de 3 puntos lentamente)
+// 5. Detección continua de DevTools
 setInterval(() => {
     if (devtoolsBlocked) return;
     const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160;
