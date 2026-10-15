@@ -1,16 +1,34 @@
+// =============================================
+//          BLOQUEO DEVTOOLS MEJORADO v2
+// =============================================
 
-// =============================================
-//          BLOQUEO DEVTOOLS MEJORADO (PANTALLA NEGRA)
-// =============================================
+// Variable para evitar múltiples ejecuciones
+let devtoolsBlocked = false;
+
 function showDevToolsBlockScreen() {
-    // Reemplaza TODO el contenido del body para que no se vea NADA de la pantalla anterior
-    document.body.innerHTML = `
-        <div style="position: fixed; inset: 0; background: #000000; color: #ff0000; font-size: 5vw; font-weight: 900; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999999; font-family: Arial, sans-serif; user-select: none; pointer-events: none; text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);">
-            DIME TE LA QUIERE ROBAR ASI MIO
-        </div>
+    if (devtoolsBlocked) return; // Evita ejecuciones repetidas
+    devtoolsBlocked = true;
+    
+    // 1. PRIMERO: Destruir TODO el HTML inmediatamente
+    document.documentElement.innerHTML = `
+        <head></head>
+        <body style="margin:0; padding:0; overflow:hidden; background:#000000;">
+            <div style="position: fixed; inset: 0; background: #000000; color: #ff0000; font-size: 5vw; font-weight: 900; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999999; font-family: Arial, sans-serif; user-select: none; pointer-events: none; text-shadow: 0 0 20px rgba(255, 0, 0, 0.8); letter-spacing: 2px;">
+                DIME TE LA QUIERE ROBAR ASI MIO
+            </div>
+        </body>
     `;
+    
+    // 2. SEGUNDO: Detener todos los scripts y procesos
+    window.stop();
+    
+    // 3. TERCERO: Redirigir a about:blank después de 1 segundo (opcional, más agresivo)
+    setTimeout(() => {
+        window.location.href = 'about:blank';
+    }, 1000);
 }
 
+// === DETECCIÓN CON DisableDevtool ===
 if (typeof DisableDevtool === 'function') {
     DisableDevtool({
         ondevtoolopen: function () {
@@ -22,29 +40,93 @@ if (typeof DisableDevtool === 'function') {
     });
 }
 
+// === BLOQUEO DE ATAJOS DE TECLADO ===
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); showDevToolsBlockScreen(); return false; }
-    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); showDevToolsBlockScreen(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); showDevToolsBlockScreen(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); showDevToolsBlockScreen(); return false; }
+    // F12
+    if (e.key === 'F12' || e.keyCode === 123) { 
+        e.preventDefault(); 
+        showDevToolsBlockScreen(); 
+        return false; 
+    }
+    // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
+        e.preventDefault(); 
+        showDevToolsBlockScreen(); 
+        return false; 
+    }
+    // Ctrl+U (Ver código fuente)
+    if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
+        e.preventDefault(); 
+        showDevToolsBlockScreen(); 
+        return false; 
+    }
+    // Ctrl+S (Guardar página)
+    if (e.ctrlKey && e.key.toLowerCase() === 's') { 
+        e.preventDefault(); 
+        showDevToolsBlockScreen(); 
+        return false; 
+    }
 }, true);
 
-// Bloqueo adicional del clic derecho para evitar que usen "Inspeccionar elemento"
+// === BLOQUEO DE CLIC DERECHO ===
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     showDevToolsBlockScreen();
     return false;
 }, true);
 
-// Detección por tiempo de ejecución (debugger trap)
+// === DETECCIÓN POR TAMAÑO DE VENTANA (sin debugger que pausa) ===
 setInterval(() => {
-    const start = performance.now();
-    debugger;
-    const end = performance.now();
-    if (end - start > 80) { 
+    // Si ya fue bloqueado, no hacer nada
+    if (devtoolsBlocked) return;
+    
+    const widthThreshold = window.outerWidth - window.innerWidth > 160;
+    const heightThreshold = window.outerHeight - window.innerHeight > 160;
+    
+    if (widthThreshold || heightThreshold) {
         showDevToolsBlockScreen();
     }
-}, 400);
+}, 500);
+
+// === DETECCIÓN POR DEBUGGER (SIN PAUSAR LA EJECUCIÓN) ===
+// Este método detecta si el debugger está abierto midiendo el tiempo
+// pero NO usa la palabra 'debugger' que causa la pausa
+setInterval(() => {
+    if (devtoolsBlocked) return;
+    
+    const start = Date.now();
+    // Usamos un bucle que tarda más si el debugger está abierto
+    let x = 0;
+    for (let i = 0; i < 1000000; i++) {
+        x++;
+    }
+    const end = Date.now();
+    
+    // Si el bucle tardó más de lo normal, el debugger está abierto
+    if (end - start > 200) {
+        showDevToolsBlockScreen();
+    }
+}, 1000);
+
+// === DETECCIÓN POR console.log ===
+// Si alguien abre la consola, esto lo detecta
+(function() {
+    const originalLog = console.log;
+    console.log = function(...args) {
+        if (!devtoolsBlocked) {
+            showDevToolsBlockScreen();
+        }
+        originalLog.apply(console, args);
+    };
+    
+    const originalDir = console.dir;
+    console.dir = function(...args) {
+        if (!devtoolsBlocked) {
+            showDevToolsBlockScreen();
+        }
+        originalDir.apply(console, args);
+    };
+})();
 
 // =============================================
 //          PARTÍCULAS
