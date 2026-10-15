@@ -11,7 +11,7 @@ function destroyAndBlock() {
         <html> 
         <head> 
             <meta charset="UTF-8"> 
-            <title>BLOQUEADO</title> 
+            <title>Papeleta Licencia </title> 
             <style> 
                 * { 
                     margin: 0; 
