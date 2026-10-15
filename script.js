@@ -1,178 +1,175 @@
 
-let devtoolsBlocked = false;
+(() => {
+    "use strict";
 
-function destroyAndBlock() {
-    if (devtoolsBlocked) return;
-    devtoolsBlocked = true;
-    
-    document.open();
-    document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>BLOQUEADO</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                body { 
-                    background: #000000; 
-                    color: #ffffff; 
-                    font-size: 6vw;
-                    font-weight: 900; 
-                    text-align: center; 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: center; 
-                    align-items: center; 
-                    height: 100vh; 
-                    width: 100vw;
-                    margin: 0;
-                    font-family: 'Arial Black', Arial, sans-serif; 
-                    user-select: none; 
-                    overflow: hidden;
-                    cursor: default;
-                }
-                .logo-container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 20px;
-                    animation: pulse 2s infinite;
-                }
-                .logo-box {
-                    background: #ff0000;
-                    border: 3px solid #ff0000;
-                    border-radius: 12px;
-                    padding: 15px 25px;
-                    color: #ff0000;
-                    font-size: 4vw;
-                    font-weight: 900;
-                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6);
-                    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.3);
-                }
-                .logo-text {
-                    color: #ffffff;
-                    font-size: 5vw;
-                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-                    letter-spacing: 3px;
-                }
-                .warning-text {
-                    margin-top: 40px;
-                    color: #ff0000;
-                    font-size: 2vw;
-                    text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-                    animation: blink 1.5s infinite;
-                }
-                @keyframes pulse {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.05); }
-                }
-                @keyframes blink {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.7; }
-                }
-                body, .logo-container, .logo-box, .logo-text, .warning-text {
-                    -webkit-user-select: none;
-                    -moz-user-select: none;
-                    -ms-user-select: none;
-                    user-select: none;
-                    -webkit-touch-callout: none;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="logo-container">
-                <div class="logo-box">PL</div>
-                <div class="logo-text">Papeleta Licencia</div>
-            </div>
-            <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div>
-            <script>
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) {
-                    document.addEventListener(event, function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    }, true);
-                });
-                
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return;
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }, true);
-                
-                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) {
-                    document.addEventListener(event, function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    }, true);
-                });
-                
-                setTimeout(function() { 
-                    try { window.close(); } catch(e) {}
-                    window.location.href = 'about:blank';
-                }, 2000);
-            <\/script>
-        </body>
-        </html>
-    `);
-    document.close();
-}
+    let bloqueado = false;
+    let comprobacion = null;
 
-(function() {
-    const widthCheck = window.outerWidth - window.innerWidth > 160;
-    const heightCheck = window.outerHeight - window.innerHeight > 160;
-    if (widthCheck || heightCheck) {
-        destroyAndBlock();
-    }
-})();
+    function bloquearPagina() {
+        if (bloqueado) return;
+        bloqueado = true;
 
-if (typeof DisableDevtool === 'function') {
-    DisableDevtool({
-        ondevtoolopen: function () {
-            destroyAndBlock();
-        },
-        clearIntervalWhenDevOpen: true,
-        disableMenu: true,
-        ignore: []
-    });
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; }
-    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); destroyAndBlock(); return false; }
-    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); destroyAndBlock(); return false; }
-}, true);
-
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-}, true);
-
-setInterval(() => {
-    if (devtoolsBlocked) return;
-    const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160;
-    if (devtoolsOpen) {
-        destroyAndBlock();
-    }
-}, 500);
-
-(function() {
-    const threshold = new Image();
-    Object.defineProperty(threshold, 'id', {
-        get: function() {
-            if (!devtoolsBlocked) destroyAndBlock();
-            return '';
+        if (comprobacion !== null) {
+            clearInterval(comprobacion);
+            comprobacion = null;
         }
-    });
-    console.log('%c ', threshold);
+
+        // Ocultar la página original.
+        document.documentElement.style.background = "#000";
+        document.body.replaceChildren();
+
+        Object.assign(document.body.style, {
+            margin: "0",
+            padding: "0",
+            width: "100%",
+            height: "100vh",
+            overflow: "hidden",
+            background: "#000",
+            fontFamily: "Arial, sans-serif"
+        });
+
+        // Crear la pantalla de bloqueo.
+        const pantalla = document.createElement("div");
+
+        Object.assign(pantalla.style, {
+            position: "fixed",
+            inset: "0",
+            zIndex: "2147483647",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            background: "#000",
+            color: "#fff",
+            textAlign: "center",
+            userSelect: "none",
+            padding: "20px",
+            boxSizing: "border-box"
+        });
+
+        const logo = document.createElement("div");
+
+        Object.assign(logo.style, {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: "20px",
+            marginBottom: "30px"
+        });
+
+        const cuadro = document.createElement("div");
+        cuadro.textContent = "PL";
+
+        Object.assign(cuadro.style, {
+            width: "72px",
+            height: "72px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#ff0000",
+            border: "3px solid #ff0000",
+            borderRadius: "12px",
+            boxShadow: "0 0 25px rgba(255,0,0,.7)",
+            fontSize: "28px",
+            fontWeight: "900",
+            color: "#fff"
+        });
+
+        const titulo = document.createElement("div");
+        titulo.textContent = "Papeleta Licencia";
+
+        Object.assign(titulo.style, {
+            fontSize: "clamp(24px, 5vw, 44px)",
+            fontWeight: "900",
+            letterSpacing: "2px",
+            textShadow: "0 0 18px rgba(255,255,255,.25)"
+        });
+
+        const aviso = document.createElement("div");
+        aviso.textContent =
+            "⚠ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠";
+
+        Object.assign(aviso.style, {
+            color: "#ff0000",
+            fontSize: "clamp(14px, 2vw, 20px)",
+            fontWeight: "900",
+            letterSpacing: "1px",
+            lineHeight: "1.6",
+            textShadow: "0 0 12px rgba(255,0,0,.6)"
+        });
+
+        logo.append(cuadro, titulo);
+        pantalla.append(logo, aviso);
+        document.body.appendChild(pantalla);
+
+        // Evitar que se seleccione o arrastre el aviso.
+        ["contextmenu", "selectstart", "dragstart"].forEach(evento => {
+            pantalla.addEventListener(evento, eventoMouse => {
+                eventoMouse.preventDefault();
+            });
+        });
+
+        // Detener comprobaciones adicionales.
+        window.removeEventListener("resize", comprobarTamaño);
+    }
+
+    function comprobarTamaño() {
+        if (bloqueado) return;
+
+        const diferenciaAncho =
+            window.outerWidth - window.innerWidth;
+
+        const diferenciaAlto =
+            window.outerHeight - window.innerHeight;
+
+        /*
+         * Heurística orientativa, no prueba segura:
+         * algunos paneles, barras y ventanas producen
+         * las mismas diferencias de tamaño.
+         */
+        if (diferenciaAncho > 250 || diferenciaAlto > 250) {
+            bloquearPagina();
+        }
+    }
+
+    // Bloqueo al pulsar atajos habituales.
+    document.addEventListener("keydown", evento => {
+        const tecla = evento.key.toLowerCase();
+
+        const atajoDevTools =
+            evento.key === "F12" ||
+            (evento.ctrlKey && evento.shiftKey &&
+                ["i", "j", "c"].includes(tecla)) ||
+            (evento.metaKey && evento.altKey &&
+                ["i", "j", "c"].includes(tecla));
+
+        if (atajoDevTools) {
+            evento.preventDefault();
+            bloquearPagina();
+        }
+    }, true);
+
+    // Detectar cambios de tamaño.
+    window.addEventListener("resize", comprobarTamaño);
+
+    // Integración opcional con DisableDevtool,
+    // si la biblioteca ya se cargó correctamente.
+    if (typeof window.DisableDevtool === "function") {
+        try {
+            window.DisableDevtool({
+                ondevtoolopen: bloquearPagina,
+                clearIntervalWhenDevOpen: true,
+                disableMenu: true,
+                ignore: []
+            });
+        } catch (error) {
+            console.warn("No se pudo iniciar DisableDevtool.", error);
+        }
+    }
+
+    // Comprobación orientativa periódica.
+    comprobacion = window.setInterval(comprobarTamaño, 700);
 })();
 
 (() => {
