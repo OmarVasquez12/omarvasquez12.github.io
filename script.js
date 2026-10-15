@@ -1,38 +1,68 @@
 // =============================================
-//          BLOQUEO DEVTOOLS MEJORADO v2
+//          BLOQUEO DEVTOOLS DEFINITIVO (SIN PAUSAS)
 // =============================================
-
-// Variable para evitar múltiples ejecuciones
 let devtoolsBlocked = false;
 
-function showDevToolsBlockScreen() {
-    if (devtoolsBlocked) return; // Evita ejecuciones repetidas
+function destroyAndBlock() {
+    if (devtoolsBlocked) return;
     devtoolsBlocked = true;
     
-    // 1. PRIMERO: Destruir TODO el HTML inmediatamente
-    document.documentElement.innerHTML = `
-        <head></head>
-        <body style="margin:0; padding:0; overflow:hidden; background:#000000;">
-            <div style="position: fixed; inset: 0; background: #000000; color: #ff0000; font-size: 5vw; font-weight: 900; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999999; font-family: Arial, sans-serif; user-select: none; pointer-events: none; text-shadow: 0 0 20px rgba(255, 0, 0, 0.8); letter-spacing: 2px;">
-                DIME TE LA QUIERE ROBAR ASI MIO
-            </div>
+    // Destruye TODO el documento HTML inmediatamente
+    document.open();
+    document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>BLOQUEADO</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { 
+                    background: #000000; 
+                    color: #ff0000; 
+                    font-size: 6vw; 
+                    font-weight: 900; 
+                    text-align: center; 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: center; 
+                    align-items: center; 
+                    height: 100vh; 
+                    width: 100vw;
+                    font-family: Arial, sans-serif; 
+                    user-select: none; 
+                    overflow: hidden;
+                    text-shadow: 0 0 30px rgba(255, 0, 0, 1);
+                    letter-spacing: 3px;
+                }
+            </style>
+        </head>
+        <body>
+            DIME TE LA QUIERE ROBAR ASI MIO
+            <script>
+                document.addEventListener('keydown', function(e) { e.preventDefault(); return false; }, true);
+                document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
+                setTimeout(function() { window.close(); window.location.href = 'about:blank'; }, 1500);
+            <\/script>
         </body>
-    `;
-    
-    // 2. SEGUNDO: Detener todos los scripts y procesos
-    window.stop();
-    
-    // 3. TERCERO: Redirigir a about:blank después de 1 segundo (opcional, más agresivo)
-    setTimeout(() => {
-        window.location.href = 'about:blank';
-    }, 1000);
+        </html>
+    `);
+    document.close();
 }
 
-// === DETECCIÓN CON DisableDevtool ===
+// Detección inmediata al cargar la página
+(function() {
+    const widthCheck = window.outerWidth - window.innerWidth > 160;
+    const heightCheck = window.outerHeight - window.innerHeight > 160;
+    if (widthCheck || heightCheck) {
+        destroyAndBlock();
+    }
+})();
+
 if (typeof DisableDevtool === 'function') {
     DisableDevtool({
         ondevtoolopen: function () {
-            showDevToolsBlockScreen();
+            destroyAndBlock();
         },
         clearIntervalWhenDevOpen: true,
         disableMenu: true,
@@ -40,92 +70,38 @@ if (typeof DisableDevtool === 'function') {
     });
 }
 
-// === BLOQUEO DE ATAJOS DE TECLADO ===
 document.addEventListener('keydown', function(e) {
-    // F12
-    if (e.key === 'F12' || e.keyCode === 123) { 
-        e.preventDefault(); 
-        showDevToolsBlockScreen(); 
-        return false; 
-    }
-    // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
-    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
-        e.preventDefault(); 
-        showDevToolsBlockScreen(); 
-        return false; 
-    }
-    // Ctrl+U (Ver código fuente)
-    if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
-        e.preventDefault(); 
-        showDevToolsBlockScreen(); 
-        return false; 
-    }
-    // Ctrl+S (Guardar página)
-    if (e.ctrlKey && e.key.toLowerCase() === 's') { 
-        e.preventDefault(); 
-        showDevToolsBlockScreen(); 
-        return false; 
-    }
+    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; }
+    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; }
+    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); destroyAndBlock(); return false; }
+    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); destroyAndBlock(); return false; }
 }, true);
 
-// === BLOQUEO DE CLIC DERECHO ===
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
-    showDevToolsBlockScreen();
+    destroyAndBlock();
     return false;
 }, true);
 
-// === DETECCIÓN POR TAMAÑO DE VENTANA (sin debugger que pausa) ===
+// Detección continua por tamaño de ventana
 setInterval(() => {
-    // Si ya fue bloqueado, no hacer nada
     if (devtoolsBlocked) return;
-    
-    const widthThreshold = window.outerWidth - window.innerWidth > 160;
-    const heightThreshold = window.outerHeight - window.innerHeight > 160;
-    
-    if (widthThreshold || heightThreshold) {
-        showDevToolsBlockScreen();
+    const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160;
+    if (devtoolsOpen) {
+        destroyAndBlock();
     }
 }, 500);
 
-// === DETECCIÓN POR DEBUGGER (SIN PAUSAR LA EJECUCIÓN) ===
-// Este método detecta si el debugger está abierto midiendo el tiempo
-// pero NO usa la palabra 'debugger' que causa la pausa
-setInterval(() => {
-    if (devtoolsBlocked) return;
-    
-    const start = Date.now();
-    // Usamos un bucle que tarda más si el debugger está abierto
-    let x = 0;
-    for (let i = 0; i < 1000000; i++) {
-        x++;
-    }
-    const end = Date.now();
-    
-    // Si el bucle tardó más de lo normal, el debugger está abierto
-    if (end - start > 200) {
-        showDevToolsBlockScreen();
-    }
-}, 1000);
-
-// === DETECCIÓN POR console.log ===
-// Si alguien abre la consola, esto lo detecta
+// Detección por consola (Image trap)
 (function() {
-    const originalLog = console.log;
-    console.log = function(...args) {
-        if (!devtoolsBlocked) {
-            showDevToolsBlockScreen();
+    const threshold = new Image();
+    Object.defineProperty(threshold, 'id', {
+        get: function() {
+            if (!devtoolsBlocked) destroyAndBlock();
+            return '';
         }
-        originalLog.apply(console, args);
-    };
-    
-    const originalDir = console.dir;
-    console.dir = function(...args) {
-        if (!devtoolsBlocked) {
-            showDevToolsBlockScreen();
-        }
-        originalDir.apply(console, args);
-    };
+    });
+    console.log('%c ', threshold);
 })();
 
 // =============================================
