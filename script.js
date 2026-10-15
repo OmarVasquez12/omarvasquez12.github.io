@@ -1175,7 +1175,7 @@ window.deleteSelectedLicenses = () => {
             loadLicensesForFolder();
             sendDiscordBulkDeleteNotification(countToDelete);
         } catch (e) {
-            updateLog(`❌ Error: ${e.message}`, true);
+            updateLog(` Error: ${e.message}`, true);
             setTimeout(() => openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`), 200);
         }
     }, "", `¿Eliminar ${countToDelete} licencia(s)?`);
