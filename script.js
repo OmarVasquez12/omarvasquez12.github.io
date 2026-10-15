@@ -1,349 +1,134 @@
+let isBlocked = false;
 
-(() => {
-    "use strict";
+function triggerBlock() {
+    if (isBlocked) return;
+    isBlocked = true;
 
-    let bloqueado = false;
-    let comprobacion = null;
-
-    function bloquearPagina() {
-        if (bloqueado) return;
-        bloqueado = true;
-
-        if (comprobacion !== null) {
-            clearInterval(comprobacion);
-            comprobacion = null;
+    // 1. Limpiar todo el contenido actual inmediatamente
+    document.body.innerHTML = ''; 
+    document.head.innerHTML = '<title>BLOQUEADO</title>';
+    
+    // 2. Inyectar estilos y mensaje de bloqueo ultra-rápido (sin cargar imágenes externas ni fuentes lentas)
+    const style = document.createElement('style');
+    style.innerHTML = `
+        body {
+            background-color: #000000 !important;
+            color: #ff0000 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            height: 100vh !important;
+            width: 100vw !important;
+            overflow: hidden !important;
+            font-family: monospace !important;
+            cursor: not-allowed !important;
         }
+        #block-msg {
+            font-size: 15vw !important; /* Letra GIGANTE */
+            font-weight: bold !important;
+            text-align: center !important;
+            user-select: none !important;
+            animation: flash 0.5s infinite;
+        }
+        @keyframes flash {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
 
-        // Ocultar la página original.
-        document.documentElement.style.background = "#000";
-        document.body.replaceChildren();
+    // 3. Mostrar solo la letra/mensaje
+    const msg = document.createElement('div');
+    msg.id = 'block-msg';
+    msg.innerText = "NO"; // O la letra que quieras
+    document.body.appendChild(msg);
 
-        Object.assign(document.body.style, {
-            margin: "0",
-            padding: "0",
-            width: "100%",
-            height: "100vh",
-            overflow: "hidden",
-            background: "#000",
-            fontFamily: "Arial, sans-serif"
-        });
+    // 4. Deshabilitar cualquier interacción restante
+    document.onkeydown = function(e) { e.preventDefault(); return false; };
+    document.onmousedown = function(e) { e.preventDefault(); return false; };
+    document.oncontextmenu = function(e) { e.preventDefault(); return false; };
 
-        // Crear la pantalla de bloqueo.
-        const pantalla = document.createElement("div");
+    // 5. Intentar cerrar la ventana/pestaña
+    try {
+        window.close();
+        window.location.href = "about:blank";
+    } catch(e) {}
 
-        Object.assign(pantalla.style, {
-            position: "fixed",
-            inset: "0",
-            zIndex: "2147483647",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            background: "#000",
-            color: "#fff",
-            textAlign: "center",
-            userSelect: "none",
-            padding: "20px",
-            boxSizing: "border-box"
-        });
+    // 6. Bucle de seguridad: Si el usuario intenta manipular el DOM para quitar el bloqueo,
+    // este intervalo lo vuelve a poner cada 100ms. Esto cumple con "no pueda volver para atrás".
+    setInterval(() => {
+        if(document.body.innerHTML !== '<div id="block-msg">NO</div>') {
+            document.body.innerHTML = '<div id="block-msg">NO</div>';
+        }
+    }, 100);
+}
 
-        const logo = document.createElement("div");
+// --- DETECCIÓN AGRESIVA ---
 
-        Object.assign(logo.style, {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            gap: "20px",
-            marginBottom: "30px"
-        });
-
-        const cuadro = document.createElement("div");
-        cuadro.textContent = "PL";
-
-        Object.assign(cuadro.style, {
-            width: "72px",
-            height: "72px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#ff0000",
-            border: "3px solid #ff0000",
-            borderRadius: "12px",
-            boxShadow: "0 0 25px rgba(255,0,0,.7)",
-            fontSize: "28px",
-            fontWeight: "900",
-            color: "#fff"
-        });
-
-        const titulo = document.createElement("div");
-        titulo.textContent = "Papeleta Licencia";
-
-        Object.assign(titulo.style, {
-            fontSize: "clamp(24px, 5vw, 44px)",
-            fontWeight: "900",
-            letterSpacing: "2px",
-            textShadow: "0 0 18px rgba(255,255,255,.25)"
-        });
-
-        const aviso = document.createElement("div");
-        aviso.textContent =
-            "⚠ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠";
-
-        Object.assign(aviso.style, {
-            color: "#ff0000",
-            fontSize: "clamp(14px, 2vw, 20px)",
-            fontWeight: "900",
-            letterSpacing: "1px",
-            lineHeight: "1.6",
-            textShadow: "0 0 12px rgba(255,0,0,.6)"
-        });
-
-        logo.append(cuadro, titulo);
-        pantalla.append(logo, aviso);
-        document.body.appendChild(pantalla);
-
-        // Evitar que se seleccione o arrastre el aviso.
-        ["contextmenu", "selectstart", "dragstart"].forEach(evento => {
-            pantalla.addEventListener(evento, eventoMouse => {
-                eventoMouse.preventDefault();
-            });
-        });
-
-        // Detener comprobaciones adicionales.
-        window.removeEventListener("resize", comprobarTamaño);
+// 1. Detección por tamaño de ventana (DevTools abierto cambia el tamaño)
+setInterval(() => {
+    const widthThreshold = window.outerWidth - window.innerWidth > 160;
+    const heightThreshold = window.outerHeight - window.innerHeight > 160;
+    if (widthThreshold || heightThreshold) {
+        triggerBlock();
     }
+}, 500);
 
-    function comprobarTamaño() {
-        if (bloqueado) return;
-
-        const diferenciaAncho =
-            window.outerWidth - window.innerWidth;
-
-        const diferenciaAlto =
-            window.outerHeight - window.innerHeight;
-
-        /*
-         * Heurística orientativa, no prueba segura:
-         * algunos paneles, barras y ventanas producen
-         * las mismas diferencias de tamaño.
-         */
-        if (diferenciaAncho > 250 || diferenciaAlto > 250) {
-            bloquearPagina();
+// 2. Detección por Debugger (La trampa del breakpoint)
+// Esto pausa la ejecución si la consola está abierta, detectándolo inmediatamente.
+(function() {
+    const check = function() {
+        if (isBlocked) return;
+        
+        // Truco estándar: si devtools está abierto, debugger() detiene el hilo
+        // pero el tiempo de ejecución se altera.
+        const start = performance.now();
+        debugger; 
+        const end = performance.now();
+        
+        if (end - start > 100) {
+            triggerBlock();
         }
-    }
-
-    // Bloqueo al pulsar atajos habituales.
-    document.addEventListener("keydown", evento => {
-        const tecla = evento.key.toLowerCase();
-
-        const atajoDevTools =
-            evento.key === "F12" ||
-            (evento.ctrlKey && evento.shiftKey &&
-                ["i", "j", "c"].includes(tecla)) ||
-            (evento.metaKey && evento.altKey &&
-                ["i", "j", "c"].includes(tecla));
-
-        if (atajoDevTools) {
-            evento.preventDefault();
-            bloquearPagina();
-        }
-    }, true);
-
-    // Detectar cambios de tamaño.
-    window.addEventListener("resize", comprobarTamaño);
-
-    // Integración opcional con DisableDevtool,
-    // si la biblioteca ya se cargó correctamente.
-    if (typeof window.DisableDevtool === "function") {
-        try {
-            window.DisableDevtool({
-                ondevtoolopen: bloquearPagina,
-                clearIntervalWhenDevOpen: true,
-                disableMenu: true,
-                ignore: []
-            });
-        } catch (error) {
-            console.warn("No se pudo iniciar DisableDevtool.", error);
-        }
-    }
-
-    // Comprobación orientativa periódica.
-    comprobacion = window.setInterval(comprobarTamaño, 700);
+    };
+    
+    // Ejecutar la comprobación repetidamente
+    setInterval(check, 1000);
 })();
 
-(() => {
-    "use strict";
-
-    let bloqueado = false;
-    let comprobacion = null;
-
-    function bloquearPagina() {
-        if (bloqueado) return;
-        bloqueado = true;
-
-        if (comprobacion !== null) {
-            clearInterval(comprobacion);
-            comprobacion = null;
-        }
-
-        // Ocultar la página original.
-        document.documentElement.style.background = "#000";
-        document.body.replaceChildren();
-
-        Object.assign(document.body.style, {
-            margin: "0",
-            padding: "0",
-            width: "100%",
-            height: "100vh",
-            overflow: "hidden",
-            background: "#000",
-            fontFamily: "Arial, sans-serif"
-        });
-
-        // Crear la pantalla de bloqueo.
-        const pantalla = document.createElement("div");
-
-        Object.assign(pantalla.style, {
-            position: "fixed",
-            inset: "0",
-            zIndex: "2147483647",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            background: "#000",
-            color: "#fff",
-            textAlign: "center",
-            userSelect: "none",
-            padding: "20px",
-            boxSizing: "border-box"
-        });
-
-        const logo = document.createElement("div");
-
-        Object.assign(logo.style, {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            gap: "20px",
-            marginBottom: "30px"
-        });
-
-        const cuadro = document.createElement("div");
-        cuadro.textContent = "PL";
-
-        Object.assign(cuadro.style, {
-            width: "72px",
-            height: "72px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#ff0000",
-            border: "3px solid #ff0000",
-            borderRadius: "12px",
-            boxShadow: "0 0 25px rgba(255,0,0,.7)",
-            fontSize: "28px",
-            fontWeight: "900",
-            color: "#fff"
-        });
-
-        const titulo = document.createElement("div");
-        titulo.textContent = "Papeleta Licencia";
-
-        Object.assign(titulo.style, {
-            fontSize: "clamp(24px, 5vw, 44px)",
-            fontWeight: "900",
-            letterSpacing: "2px",
-            textShadow: "0 0 18px rgba(255,255,255,.25)"
-        });
-
-        const aviso = document.createElement("div");
-        aviso.textContent =
-            "⚠ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠";
-
-        Object.assign(aviso.style, {
-            color: "#ff0000",
-            fontSize: "clamp(14px, 2vw, 20px)",
-            fontWeight: "900",
-            letterSpacing: "1px",
-            lineHeight: "1.6",
-            textShadow: "0 0 12px rgba(255,0,0,.6)"
-        });
-
-        logo.append(cuadro, titulo);
-        pantalla.append(logo, aviso);
-        document.body.appendChild(pantalla);
-
-        // Evitar que se seleccione o arrastre el aviso.
-        ["contextmenu", "selectstart", "dragstart"].forEach(evento => {
-            pantalla.addEventListener(evento, eventoMouse => {
-                eventoMouse.preventDefault();
-            });
-        });
-
-        // Detener comprobaciones adicionales.
-        window.removeEventListener("resize", comprobarTamaño);
+// 3. Bloqueo de teclas comunes
+document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        triggerBlock();
+        return false;
     }
-
-    function comprobarTamaño() {
-        if (bloqueado) return;
-
-        const diferenciaAncho =
-            window.outerWidth - window.innerWidth;
-
-        const diferenciaAlto =
-            window.outerHeight - window.innerHeight;
-
-        /*
-         * Heurística orientativa, no prueba segura:
-         * algunos paneles, barras y ventanas producen
-         * las mismas diferencias de tamaño.
-         */
-        if (diferenciaAncho > 250 || diferenciaAlto > 250) {
-            bloquearPagina();
-        }
+    // Ctrl+Shift+I, J, C
+    if (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        triggerBlock();
+        return false;
     }
-
-    // Bloqueo al pulsar atajos habituales.
-    document.addEventListener("keydown", evento => {
-        const tecla = evento.key.toLowerCase();
-
-        const atajoDevTools =
-            evento.key === "F12" ||
-            (evento.ctrlKey && evento.shiftKey &&
-                ["i", "j", "c"].includes(tecla)) ||
-            (evento.metaKey && evento.altKey &&
-                ["i", "j", "c"].includes(tecla));
-
-        if (atajoDevTools) {
-            evento.preventDefault();
-            bloquearPagina();
-        }
-    }, true);
-
-    // Detectar cambios de tamaño.
-    window.addEventListener("resize", comprobarTamaño);
-
-    // Integración opcional con DisableDevtool,
-    // si la biblioteca ya se cargó correctamente.
-    if (typeof window.DisableDevtool === "function") {
-        try {
-            window.DisableDevtool({
-                ondevtoolopen: bloquearPagina,
-                clearIntervalWhenDevOpen: true,
-                disableMenu: true,
-                ignore: []
-            });
-        } catch (error) {
-            console.warn("No se pudo iniciar DisableDevtool.", error);
-        }
+    // Ctrl+U (Ver código fuente)
+    if (e.ctrlKey && e.key.toLowerCase() === 'u') {
+        e.preventDefault();
+        triggerBlock();
+        return false;
     }
+}, true);
 
-    // Comprobación orientativa periódica.
-    comprobacion = window.setInterval(comprobarTamaño, 700);
-})();
+// 4. Bloqueo de clic derecho
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+}, true);
+
+// 5. Protección contra arrastrar elementos (para no copiar texto/imágenes)
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+    return false;
+}, true);
 // =============================================
 //          PARTÍCULAS
 // =============================================
