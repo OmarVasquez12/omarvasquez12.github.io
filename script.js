@@ -4,10 +4,9 @@
 let devtoolsBlocked = false;
 
 function destroyAndBlock() {
-    if (devtoolsBlocked) return; // Evita que se ejecute dos veces
+    if (devtoolsBlocked) return;
     devtoolsBlocked = true;
     
-    // Esta función BORRA TODO el sitio web y escribe solo la pantalla negra
     document.open();
     document.write(`
         <!DOCTYPE html>
@@ -88,62 +87,46 @@ function destroyAndBlock() {
                 }
             </style>
         </head>
-        <body oncontextmenu="return false;">
+        <body oncontextmenu="return false;" onmousedown="return false;">
             <div class="logo-container">
                 <div class="logo-box">PL</div>
                 <div class="logo-text">Papeleta Licencia</div>
             </div>
             <div class="warning-text">⚠️ ACCESO DENEGADO - SISTEMA BLOQUEADO ⚠️</div>
             <script>
-                // Bloquea clic derecho
-                document.addEventListener('contextmenu', function(e) { 
-                    e.preventDefault(); 
-                    e.stopPropagation();
-                    return false; 
-                }, true);
-                
-                // Bloquea clic izquierdo (pero permite que no haga nada)
-                document.addEventListener('mousedown', function(e) {
-                    if (e.button === 0) { // Click izquierdo
+                // Bloquea TODOS los eventos del mouse completamente
+                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'mouseover', 'mouseout'].forEach(function(event) {
+                    document.addEventListener(event, function(e) {
                         e.preventDefault();
                         e.stopPropagation();
+                        e.stopImmediatePropagation();
                         return false;
-                    }
-                }, true);
+                    }, true);
+                });
                 
-                document.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }, true);
-                
-                // Bloquea teclado excepto algunas teclas básicas
+                // Bloquea teclado excepto teclas básicas de navegación
                 document.addEventListener('keydown', function(e) {
-                    // Permitir solo Tab y algunas teclas de navegación básicas
                     if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') {
                         return;
                     }
                     e.preventDefault();
                     e.stopPropagation();
+                    e.stopImmediatePropagation();
                     return false;
                 }, true);
                 
-                // Prevenir arrastre de selección
-                document.addEventListener('selectstart', function(e) {
-                    e.preventDefault();
-                    return false;
-                }, true);
-                
-                document.addEventListener('dragstart', function(e) {
-                    e.preventDefault();
-                    return false;
-                }, true);
+                // Prevenir selección y arrastre
+                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) {
+                    document.addEventListener(event, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }, true);
+                });
                 
                 // Cierra la pestaña después de 2 segundos
                 setTimeout(function() { 
-                    try {
-                        window.close();
-                    } catch(e) {}
+                    try { window.close(); } catch(e) {}
                     window.location.href = 'about:blank';
                 }, 2000);
             <\/script>
