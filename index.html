@@ -1230,6 +1230,20 @@
     </div>
 </div>
 
+<!-- NUEVO MODAL: GESTOR DE ACCESOS (IGUAL QUE USUARIOS AUTORIZADOS) -->
+<div class="modal-overlay" id="accessManagerModal">
+    <div class="users-modal-content">
+        <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Historial de personas que han ingresado al sistema</p>
+        
+        <div class="users-list" id="accessList"></div>
+        
+        <button class="btn-close-edit" onclick="closeAccessManager()" style="margin-top:1rem;">
+            <i class="fa-solid fa-xmark"></i> Cerrar
+        </button>
+    </div>
+</div>
+
 <!-- Modal Edición Múltiple -->
 <div class="modal-overlay" id="editOptionsModal">
     <div class="edit-options-content">
@@ -1318,20 +1332,6 @@
         </div>
 
         <button class="btn-close-edit" onclick="closeUserLicensesPanel()" style="margin-top:1rem;">✕ Cerrar Panel</button>
-    </div>
-</div>
-
-<!-- NUEVO MODAL: GESTOR DE ACCESOS -->
-<div class="modal-overlay" id="accessManagerModal">
-    <div class="edit-options-content" style="max-width:700px;">
-        <h3><i class="fa-solid fa-user-shield"></i> Gestionar Accesos</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem;">Personas que han ingresado al sistema</p>
-        
-        <div class="users-list" id="accessList" style="max-height:400px;"></div>
-        
-        <button class="btn-close-edit" onclick="closeAccessManager()" style="margin-top:1rem;">
-            <i class="fa-solid fa-xmark"></i> Cerrar
-        </button>
     </div>
 </div>
 
