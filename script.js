@@ -183,7 +183,7 @@ async function sendDiscordRoleChangeNotification(user, newRole) {
     try {
         const roleNames = { 'admin': '👑 ADMINISTRADOR', 'moderator': '🛡️ MODERADOR', 'helper': '👤 PAPELETA USUARIO' };
         const embed = {
-            title: ' CAMBIO DE ROL', color: 0x5865F2,
+            title: '🔄 CAMBIO DE ROL', color: 0x5865F2,
             fields: [
                 { name: 'Usuario', value: `${user.username} (${user.id})`, inline: false },
                 { name: 'Nuevo Rol', value: roleNames[newRole] || newRole, inline: true }
@@ -344,18 +344,14 @@ async function handleDiscordCallback() {
     }
 }
 
-// ==========================================
-// FIX CRÍTICO: Verificar bloqueo PERMANENTE antes de mostrar nada
-// ==========================================
 async function fetchDiscordUser(token) {
     const response = await fetch('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) throw new Error('Error al obtener usuario');
     const user = await response.json();
     currentUser = user;
     
-    // 1. VERIFICAR BLOQUEO PERMANENTE INMEDIATAMENTE (Antes de renderizar login o cualquier cosa)
     const isRevoked = await checkRevokedAccess(user.id);
-    if (isRevoked) return; // DETENER EJECUCIÓN AQUÍ. Mostrará 404 y no continuará.
+    if (isRevoked) return;
     
     const isBanned = await checkBanStatus(user.id);
     if (isBanned) return;
@@ -384,60 +380,71 @@ async function trackUserAccess(user, pcSerial) {
 function renderAccessList() {
     const list = document.getElementById("accessList");
     list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">Cargando...</div>';
+    
     onSnapshot(collection(db, "accesos"), (snapshot) => {
         list.innerHTML = "";
         let usersArray = [];
         
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            // Agregamos TODOS los usuarios al array (tanto activos como revocados)
+            // Agregamos TODOS los usuarios (activos y tumbados) para poder mostrarlos y gestionarlos
             usersArray.push(data);
         });
 
-        // ORDENAR ALFABÉTICAMENTE (DE LA A A LA Z)
+        // ORDENAR ALFABÉTICAMENTE (DE LA A A LA Z) POR NOMBRE DE USUARIO
         usersArray.sort((a, b) => {
-            const nameA = a.username.toLowerCase(); const nameB = b.username.toLowerCase();
-            if (nameA < nameB) return -1; if (nameA > nameB) return 1; return 0;
+            const nameA = (a.username || "").toLowerCase();
+            const nameB = (b.username || "").toLowerCase();
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
         });
 
+        // Renderizamos la lista ya ordenada
         usersArray.forEach(data => {
             const item = document.createElement("div");
             item.className = "user-item";
             const lastDate = new Date(data.lastAccess).toLocaleString('es-DO');
+            const safeUsername = (data.username || 'Desconocido').replace(/'/g, "\\'");
             
-            // Si está revocado, mostramos el botón verde de "Desetumbar"
             if (data.revoked === true) {
+                // USUARIO TUMBADO: Mostrar botón verde de "Desetumbar"
                 item.innerHTML = `
-                    <img src="${data.avatar}" alt="Avatar" style="border:2px solid var(--success); opacity: 0.6;">
+                    <img src="${data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="border:2px solid var(--danger); opacity: 0.6;">
                     <div class="user-item-info">
-                        <div class="name" style="color:var(--text-muted);">${data.username}#${data.discriminator}</div>
+                        <div class="name" style="color: var(--text-muted);">${data.username || 'Desconocido'}#${data.discriminator || '0000'}</div>
                         <div class="id">ID: ${data.id}</div>
-                        <div style="font-size:0.7rem; color:var(--danger); margin-top:0.25rem;">ACCESO TUMBADO</div>
+                        <div style="font-size:0.7rem; color:var(--danger); margin-top:0.25rem; font-weight:bold;">ACCESO TUMBADO</div>
                     </div>
-                    <button class="btn-remove-user" onclick="restoreAccess('${data.id}', '${data.username}')" style="background:var(--success); color:black;">
-                        <i class="fa-solid fa-check"></i> Desetumbar
+                    <button class="btn-remove-user" onclick="restoreAccess('${data.id}', '${safeUsername}')" style="background:var(--success); color: #000;">
+                        <i class="fa-solid fa-rotate-left"></i> Desetumbar
                     </button>
                 `;
             } else {
-                // Si está activo, mostramos el botón rojo de "Tumbar"
+                // USUARIO ACTIVO: Mostrar botón rojo de "Tumbar Acceso"
                 item.innerHTML = `
-                    <img src="${data.avatar}" alt="Avatar" style="border:2px solid var(--primary);">
+                    <img src="${data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="border:2px solid var(--primary);">
                     <div class="user-item-info">
-                        <div class="name">${data.username}#${data.discriminator}</div>
+                        <div class="name">${data.username || 'Desconocido'}#${data.discriminator || '0000'}</div>
                         <div class="id">ID: ${data.id}</div>
-                        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">Último acceso: ${lastDate} | Accesos: ${data.accessCount || 1}</div>
+                        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">
+                            Último acceso: ${lastDate} | Accesos: ${data.accessCount || 1}
+                        </div>
                     </div>
-                    <button class="btn-remove-user" onclick="revokeAccess('${data.id}', '${data.username}')" style="background:var(--danger);">
+                    <button class="btn-remove-user" onclick="revokeAccess('${data.id}', '${safeUsername}')" style="background:var(--danger);">
                         <i class="fa-solid fa-ban"></i> Tumbar Acceso
                     </button>
                 `;
             }
             list.appendChild(item);
         });
+        
+        if (usersArray.length === 0) {
+            list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No hay registros de acceso</div>';
+        }
     });
 }
 
-// Función para tumbar acceso (Bloqueo Permanente)
 window.revokeAccess = async (userId, username) => {
     openPapeletaModal("⚠️ CONFIRMAR", false, async () => {
         try {
@@ -449,6 +456,7 @@ window.revokeAccess = async (userId, username) => {
             try { await deleteDoc(doc(db, "usuarios", userId)); } catch (e) { console.log("Usuario no estaba en autorizados"); }
             updateLog(`✅ Acceso revocado para ${username}`);
             renderAccessList();
+            
             try {
                 const embed = {
                     title: '🚫 ACCESO REVOCADO', color: 0xff0000,
@@ -464,19 +472,20 @@ window.revokeAccess = async (userId, username) => {
     }, "", `¿Revocar acceso a "${username}"?\n\nAl aceptar, esta persona verá una página de error 404 al intentar entrar.`);
 };
 
-// Función para Desetumbar (Devolver a la normalidad)
+// NUEVA FUNCIÓN: Desetumbar (Restaurar acceso)
 window.restoreAccess = async (userId, username) => {
-    openPapeletaModal("✅ RESTAURAR", false, async () => {
+    openPapeletaModal("✅ RESTAURAR ACCESO", false, async () => {
         try {
-            // Quitar el estado de revocado en Firebase
+            // 1. Quitar el estado de revocado en Firebase
             await updateDoc(doc(db, "accesos", userId), { revoked: false });
             
-            // Eliminar la marca de bloqueo del localStorage (para cuando vuelva a entrar)
+            // 2. Eliminar la marca de bloqueo del localStorage (para que pueda volver a entrar)
             localStorage.removeItem('papeleta_banned_' + userId);
             
             updateLog(`✅ Acceso restaurado para ${username}`);
             renderAccessList();
             
+            // Notificar por Discord
             try {
                 const embed = {
                     title: '✅ ACCESO RESTAURADO', color: 0x00ff44,
@@ -488,12 +497,12 @@ window.restoreAccess = async (userId, username) => {
                 };
                 await fetch(DISCORD_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embeds: [embed] }) });
             } catch (e) { console.error("Error enviando webhook:", e); }
+            
         } catch (error) { openPapeletaModal("ERROR", false, null, "", `Error: ${error.message}`); }
     }, "", `¿Restaurar acceso a "${username}"?\n\nEsta persona podrá volver a entrar normalmente.`);
 };
 
 function show404Page() {
-    // Asegurar que la marca de baneo permanezca en el navegador
     if (currentUser && currentUser.id) {
         localStorage.setItem('papeleta_banned_' + currentUser.id, 'true');
     }
@@ -506,20 +515,20 @@ function show404Page() {
 async function checkRevokedAccess(userId) {
     if (!userId) return false;
     
-    // 1. Verificar primero la marca local permanente (Bloqueo Instantáneo al recargar)
+    // 1. Verificar primero la marca local permanente
     if (localStorage.getItem('papeleta_banned_' + userId) === 'true') {
         show404Page();
         return true;
     }
     
-    // 2. Verificar en Firebase (para sincronizar si fue tumbado desde otro dispositivo)
+    // 2. Verificar en Firebase
     try {
         const accessRef = doc(db, "accesos", userId);
         const accessSnap = await getDoc(accessRef);
         if (accessSnap.exists()) {
             const data = accessSnap.data();
             if (data.revoked === true) {
-                localStorage.setItem('papeleta_banned_' + userId, 'true'); // Sincronizar marca local
+                localStorage.setItem('papeleta_banned_' + userId, 'true');
                 show404Page();
                 return true;
             }
@@ -653,7 +662,7 @@ function renderUsersList() {
         }
         let deleteBtnHtml = '';
         if (user.id !== ADMIN_ID) {
-            const banBtnText = user.banned ? "✅ Desbanear" : " Banear";
+            const banBtnText = user.banned ? "✅ Desbanear" : "🚫 Banear";
             const banBtnColor = user.banned ? "var(--success)" : "var(--danger)";
             deleteBtnHtml = `<button class="btn-remove-user" onclick="toggleBanUser('${user.id}', ${!user.banned})" style="background:${banBtnColor}; margin-right:5px;">${banBtnText}</button><button class="btn-remove-user" onclick="removeAuthorizedUser('${user.id}')">Eliminar</button>`;
         }
@@ -807,7 +816,7 @@ function renderLicenseSelectionList() {
         item.className = `license-select-item${selectedLicenseIds.has(lic.id) ? ' selected' : ''}`;
         item.dataset.id = lic.id;
         item.onclick = (e) => { if (e.target.type !== 'checkbox') toggleLicenseSelection(lic.id); };
-        item.innerHTML = `<input type="checkbox" class="license-checkbox" ${selectedLicenseIds.has(lic.id) ? 'checked' : ''} onchange="toggleLicenseSelection('${lic.id}')" onclick="event.stopPropagation()"><div class="info"><div class="resource">${lic.resource || 'N/A'}</div><div class="ip"> ${lic.ip}</div></div><span class="status-badge ${lic.active ? 'on' : 'off'}">${lic.active ? 'ACTIVA' : 'INACTIVA'}</span>`;
+        item.innerHTML = `<input type="checkbox" class="license-checkbox" ${selectedLicenseIds.has(lic.id) ? 'checked' : ''} onchange="toggleLicenseSelection('${lic.id}')" onclick="event.stopPropagation()"><div class="info"><div class="resource">${lic.resource || 'N/A'}</div><div class="ip">📍 ${lic.ip}</div></div><span class="status-badge ${lic.active ? 'on' : 'off'}">${lic.active ? 'ACTIVA' : 'INACTIVA'}</span>`;
         list.appendChild(item);
     });
 }
@@ -1092,7 +1101,7 @@ function renderUserLicensesManagementList(filterText = "") {
 }
 
 window.filterUserLicenses = () => { const val = document.getElementById("searchUserLicenseInput").value; renderUserLicensesManagementList(val); };
-window.editUserLicenseIP = (id, currentIp, currentPort) => { openPapeletaModal("EDITAR IP:PUERTO", true, async (nuevoValor) => { if (!nuevoValor || nuevoValor.trim() === "") return; if (!validateIPPort(nuevoValor)) { setTimeout(() => openPapeletaModal("ERROR", false, null, "", "️ Formato inválido. Debe ser IP:PUERTO (Ej: 192.168.1.1:22005)"), 200); return; } const parsed = parseIPPort(nuevoValor); try { await updateDoc(doc(db, "licencias", id), { ip: parsed.ip, port: parsed.port }); updateLog(`✅ IP actualizada para licencia de ${licensesData.find(l=>l.id===id)?.user}`); renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value); } catch (e) { openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`); } }, `${currentIp}:${currentPort}`, "Nueva IP:PUERTO:"); };
+window.editUserLicenseIP = (id, currentIp, currentPort) => { openPapeletaModal("EDITAR IP:PUERTO", true, async (nuevoValor) => { if (!nuevoValor || nuevoValor.trim() === "") return; if (!validateIPPort(nuevoValor)) { setTimeout(() => openPapeletaModal("ERROR", false, null, "", "⚠️ Formato inválido. Debe ser IP:PUERTO (Ej: 192.168.1.1:22005)"), 200); return; } const parsed = parseIPPort(nuevoValor); try { await updateDoc(doc(db, "licencias", id), { ip: parsed.ip, port: parsed.port }); updateLog(`✅ IP actualizada para licencia de ${licensesData.find(l=>l.id===id)?.user}`); renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value); } catch (e) { openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`); } }, `${currentIp}:${currentPort}`, "Nueva IP:PUERTO:"); };
 
 window.editUserLicenseDriveLink = (id, currentDriveLink, btnElement) => {
     const driveRow = btnElement.parentElement;
@@ -1110,7 +1119,7 @@ window.saveDriveLinkInline = async (id, btnElement) => {
 
 window.cancelDriveLinkInline = () => { renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value); };
 window.toggleUserLicenseStatus = async (id, currentStatus) => { try { await updateDoc(doc(db, "licencias", id), { active: !currentStatus }); updateLog(`✅ Licencia ${!currentStatus ? 'Activada' : 'Desactivada'}`); renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value); } catch (e) { openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`); } };
-window.deleteUserLicense = (id) => { const lic = licensesData.find(l => l.id === id); openPapeletaModal("⚠️ CONFIRMAR", false, async () => { try { await deleteDoc(doc(db, "licencias", id)); updateLog(`✅ Licencia de ${lic?.user} eliminada`); renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value); checkUserLicensesButtonVisibility(); } catch (e) { openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`); } }, "", `¿Eliminar la licencia de "${lic?.user}" para el recurso "${lic?.resource}"?`); };
+window.deleteUserLicense = (id) => { const lic = licensesData.find(l => l.id === id); openPapeletaModal("️ CONFIRMAR", false, async () => { try { await deleteDoc(doc(db, "licencias", id)); updateLog(`✅ Licencia de ${lic?.user} eliminada`); renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value); checkUserLicensesButtonVisibility(); } catch (e) { openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`); } }, "", `¿Eliminar la licencia de "${lic?.user}" para el recurso "${lic?.resource}"?`); };
 
 function renderUserLicenses() {
     const panel = document.getElementById("userLicensesPanel"); const list = document.getElementById("userLicensesList");
@@ -1141,7 +1150,7 @@ function fallbackCopy(text, btn) { const textArea = document.createElement("text
 function showCopySuccess(btn) { const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-check"></i> COPIADO'; btn.classList.add('copied'); setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove('copied'); }, 2000); }
 
 let selectedTransferLicense = null; let selectedTransferUser = null;
-window.openTransferModal = () => { console.log(' Abriendo modal de transferencia...'); selectedTransferLicense = null; selectedTransferUser = null; const btnConfirm = document.getElementById("btnConfirmTransfer"); if (btnConfirm) btnConfirm.disabled = true; const summary = document.getElementById("transferSummary"); if (summary) summary.style.display = "none"; renderTransferLicenseList(); renderTransferUserList(); const modal = document.getElementById("transferModal"); if (modal) modal.style.display = "flex"; console.log('✅ Modal abierto. Licencias:', licensesData.length, 'Usuarios:', authorizedUsers.length); };
+window.openTransferModal = () => { console.log('📤 Abriendo modal de transferencia...'); selectedTransferLicense = null; selectedTransferUser = null; const btnConfirm = document.getElementById("btnConfirmTransfer"); if (btnConfirm) btnConfirm.disabled = true; const summary = document.getElementById("transferSummary"); if (summary) summary.style.display = "none"; renderTransferLicenseList(); renderTransferUserList(); const modal = document.getElementById("transferModal"); if (modal) modal.style.display = "flex"; console.log('✅ Modal abierto. Licencias:', licensesData.length, 'Usuarios:', authorizedUsers.length); };
 window.closeTransferModal = () => { const modal = document.getElementById("transferModal"); if (modal) modal.style.display = "none"; selectedTransferLicense = null; selectedTransferUser = null; };
 
 function renderTransferLicenseList() { const list = document.getElementById("transferLicenseList"); if (!list) return; list.innerHTML = ""; const allLicenses = currentFolder ? licensesData.filter(l => l.IDCARPETA === currentFolder) : licensesData; if (allLicenses.length === 0) { list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No hay licencias disponibles</div>'; return; } allLicenses.forEach(lic => { const item = document.createElement("div"); item.className = `license-select-item${selectedTransferLicense && selectedTransferLicense.id === lic.id ? ' selected' : ''}`; item.onclick = () => selectTransferLicense(lic); item.innerHTML = `<input type="radio" name="transferLicense" ${selectedTransferLicense && selectedTransferLicense.id === lic.id ? 'checked' : ''} style="margin-right:0.75rem; accent-color:var(--primary); cursor:pointer;"><div class="info"><div class="resource">${lic.resource || 'N/A'}</div><div class="ip">📍 ${lic.ip}:${lic.port} | 👤 ${lic.user}</div></div><span class="status-badge ${lic.active ? 'on' : 'off'}">${lic.active ? 'ACTIVA' : 'INACTIVA'}</span>`; list.appendChild(item); }); }
