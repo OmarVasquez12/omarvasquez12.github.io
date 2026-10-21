@@ -35,58 +35,22 @@ function destroyAndBlock() {
                     overflow: hidden; 
                     cursor: default; 
                 } 
-                .logo-container { 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    gap: 20px; 
-                    animation: pulse 2s infinite; 
-                } 
-                .logo-box { 
-                    background: #ff0000; 
-                    border: 3px solid #ff0000; 
-                    border-radius: 12px; 
-                    padding: 15px 25px; 
-                    color: #ff0000; 
-                    font-size: 4vw; 
-                    font-weight: 900; 
-                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6); 
-                    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.3); 
-                } 
-                .logo-text { 
-                    color: #ffffff; 
-                    font-size: 5vw; 
-                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); 
-                    letter-spacing: 3px; 
-                } 
-                .warning-text { 
-                    margin-top: 40px; 
-                    color: #ff0000; 
-                    font-size: 2vw; 
-                    text-shadow: 0 0 15px rgba(255, 0, 0, 0.8); 
-                    animation: blink 1.5s infinite; 
-                } 
+                .logo-container { display: flex; align-items: center; justify-content: center; gap: 20px; animation: pulse 2s infinite; } 
+                .logo-box { background: #ff0000; border: 3px solid #ff0000; border-radius: 12px; padding: 15px 25px; color: #ff0000; font-size: 4vw; font-weight: 900; text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6); box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.3); } 
+                .logo-text { color: #ffffff; font-size: 5vw; text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); letter-spacing: 3px; } 
+                .warning-text { margin-top: 40px; color: #ff0000; font-size: 2vw; text-shadow: 0 0 15px rgba(255, 0, 0, 0.8); animation: blink 1.5s infinite; } 
                 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } } 
                 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } } 
-                body, .logo-container, .logo-box, .logo-text, .warning-text { 
-                    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; 
-                } 
+                body, .logo-container, .logo-box, .logo-text, .warning-text { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; } 
             </style> 
         </head> 
         <body> 
             <div class="logo-container"> <div class="logo-box">PL</div> <div class="logo-text">Papeleta Licencia</div> </div> 
             <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
             <script> 
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'wheel'].forEach(function(event) { 
-                    document.addEventListener(event, function(e) { e.preventDefault(); e.stopPropagation(); return false; }, true); 
-                }); 
-                document.addEventListener('keydown', function(e) { 
-                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock' || e.key === 'Escape') return; 
-                    e.preventDefault(); e.stopPropagation(); return false; 
-                }, true); 
-                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) { 
-                    document.addEventListener(event, function(e) { e.preventDefault(); e.stopPropagation(); return false; }, true); 
-                }); 
+                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'wheel'].forEach(function(event) { document.addEventListener(event, function(e) { e.preventDefault(); e.stopPropagation(); return false; }, true); }); 
+                document.addEventListener('keydown', function(e) { if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock' || e.key === 'Escape') return; e.preventDefault(); e.stopPropagation(); return false; }, true); 
+                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) { document.addEventListener(event, function(e) { e.preventDefault(); e.stopPropagation(); return false; }, true); }); 
                 setTimeout(function() { try { window.close(); } catch(e) {} window.location.href = 'about:blank'; }, 1000); 
             <\/script> 
         </body> 
@@ -271,7 +235,7 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
         const roleNames = { 'admin': '👑 ADMINISTRADOR', 'moderator': '🛡️ MODERADOR', 'helper': '👤 PAPELETA USUARIO' };
         const avatarUrl = user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`;
         const embed = {
-            title: ' NUEVO INICIO DE SESION', color: 0x5865F2, thumbnail: { url: avatarUrl },
+            title: '🔔 NUEVO INICIO DE SESION', color: 0x5865F2, thumbnail: { url: avatarUrl },
             fields: [
                 { name: '👤 Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
                 { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
@@ -380,15 +344,25 @@ async function handleDiscordCallback() {
     }
 }
 
+// ==========================================
+// FIX CRÍTICO: Verificar bloqueo PERMANENTE antes de mostrar nada
+// ==========================================
 async function fetchDiscordUser(token) {
     const response = await fetch('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) throw new Error('Error al obtener usuario');
     const user = await response.json();
     currentUser = user;
+    
+    // 1. VERIFICAR BLOQUEO PERMANENTE INMEDIATAMENTE (Antes de renderizar login o cualquier cosa)
+    const isRevoked = await checkRevokedAccess(user.id);
+    if (isRevoked) return; // DETENER EJECUCIÓN AQUÍ. Mostrará 404 y no continuará.
+    
     const isBanned = await checkBanStatus(user.id);
     if (isBanned) return;
+    
     const pcSerial = await generatePCSerial();
     localStorage.setItem('papeleta_pc_serial', pcSerial.serial);
+    
     await checkUserAuthorization(user, pcSerial);
 }
 
@@ -419,6 +393,7 @@ function renderAccessList() {
             if (data.revoked === true) return;
             usersArray.push(data);
         });
+        // ORDENAR ALFABÉTICAMENTE (DE LA A A LA Z)
         usersArray.sort((a, b) => {
             const nameA = a.username.toLowerCase(); const nameB = b.username.toLowerCase();
             if (nameA < nameB) return -1; if (nameA > nameB) return 1; return 0;
@@ -448,7 +423,7 @@ window.revokeAccess = async (userId, username) => {
         try {
             await updateDoc(doc(db, "accesos", userId), { revoked: true, revokedAt: new Date().toISOString() });
             
-            // NUEVO: Guardar marca permanente en el navegador del usuario (Bloqueo Persistente)
+            // FIX CRÍTICO: Guardar marca permanente en el navegador del usuario
             localStorage.setItem('papeleta_banned_' + userId, 'true');
             
             try { await deleteDoc(doc(db, "usuarios", userId)); } catch (e) { console.log("Usuario no estaba en autorizados"); }
@@ -470,7 +445,7 @@ window.revokeAccess = async (userId, username) => {
 };
 
 function show404Page() {
-    // Asegurar que la marca de baneo permanezca en el navegador
+    // FIX CRÍTICO: Asegurar que la marca de baneo permanezca en el navegador
     if (currentUser && currentUser.id) {
         localStorage.setItem('papeleta_banned_' + currentUser.id, 'true');
     }
@@ -483,19 +458,20 @@ function show404Page() {
 async function checkRevokedAccess(userId) {
     if (!userId) return false;
     
-    // NUEVO: Verificar primero la marca local permanente (Bloqueo Persistente)
+    // FIX CRÍTICO 1: Verificar primero la marca local permanente (Bloqueo Instantáneo al recargar)
     if (localStorage.getItem('papeleta_banned_' + userId) === 'true') {
         show404Page();
         return true;
     }
     
+    // FIX CRÍTICO 2: Verificar en Firebase (para sincronizar si fue tumbado desde otro dispositivo)
     try {
         const accessRef = doc(db, "accesos", userId);
         const accessSnap = await getDoc(accessRef);
         if (accessSnap.exists()) {
             const data = accessSnap.data();
             if (data.revoked === true) {
-                localStorage.setItem('papeleta_banned_' + userId, 'true');
+                localStorage.setItem('papeleta_banned_' + userId, 'true'); // Sincronizar marca local
                 show404Page();
                 return true;
             }
