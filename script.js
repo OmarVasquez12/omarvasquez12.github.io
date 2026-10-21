@@ -1,248 +1,213 @@
-let devtoolsBlocked = false;
-let navigationBlocked = false;
+let devtoolsBlocked = false; 
 
-// ==========================================
-// SISTEMA ANTI-INSPECCIÓN Y ANTI-COPIA
-// ==========================================
-
-function destroyAndBlock() {
-    if (devtoolsBlocked) return;
-    devtoolsBlocked = true;
+function destroyAndBlock() { 
+    if (devtoolsBlocked) return; 
+    devtoolsBlocked = true; 
     
     // Cerrar cualquier modal abierto inmediatamente
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.style.display = 'none';
     });
     
-    // Limpiar todo el contenido
-    document.open();
-    document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Acceso Denegado</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    background: #000000;
-                    color: #ff0000;
-                    font-size: 4vw;
-                    font-weight: 900;
-                    text-align: center;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    width: 100vw;
-                    margin: 0;
-                    font-family: 'Arial Black', Arial, sans-serif;
-                    user-select: none;
-                    overflow: hidden;
-                    cursor: not-allowed;
-                }
-                .warning-text {
-                    animation: blink 0.5s infinite;
-                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
-                }
-                @keyframes blink {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.3; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="warning-text">🚫 ACCESO DENEGADO 🚫</div>
-            <div style="font-size: 2vw; margin-top: 20px; color: #ff6666;">
-                Intento de inspección detectado
-            </div>
-            <script>
-                // Bloquear todo intento de interacción
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'wheel', 'keydown', 'keyup', 'keypress'].forEach(function(event) {
-                    document.addEventListener(event, function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    }, true);
-                });
-                
-                // Redireccionar si intentan navegar
-                window.onbeforeunload = function() {
-                    return '';
-                };
-                
-                setTimeout(function() {
-                    try { window.close(); } catch(e) {}
-                    document.body.innerHTML = '<div style="color:red;font-size:3vw;">PÁGINA ELIMINADA</div>';
-                }, 2000);
-            <\/script>
-        </body>
-        </html>
-    `);
-    document.close();
-}
-
-// ==========================================
-// DETECCIÓN DE DEVTOOLS
-// ==========================================
+    document.open(); 
+    document.write(` 
+        <!DOCTYPE html> 
+        <html> 
+        <head> 
+            <meta charset="UTF-8"> 
+            <title>Papeleta Licencia </title> 
+            <style> 
+                * { 
+                    margin: 0; 
+                    padding: 0; 
+                    box-sizing: border-box; 
+                } 
+                body {  
+                    background: #000000;  
+                    color: #ffffff;  
+                    font-size: 6vw; 
+                    font-weight: 900;  
+                    text-align: center;  
+                    display: flex;  
+                    flex-direction: column;  
+                    justify-content: center;  
+                    align-items: center;  
+                    height: 100vh;  
+                    width: 100vw; 
+                    margin: 0; 
+                    font-family: 'Arial Black', Arial, sans-serif;  
+                    user-select: none;  
+                    overflow: hidden; 
+                    cursor: default; 
+                } 
+                .logo-container { 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    gap: 20px; 
+                    animation: pulse 2s infinite; 
+                } 
+                .logo-box { 
+                    background: #ff0000; 
+                    border: 3px solid #ff0000; 
+                    border-radius: 12px; 
+                    padding: 15px 25px; 
+                    color: #ff0000; 
+                    font-size: 4vw; 
+                    font-weight: 900; 
+                    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6); 
+                    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.3); 
+                } 
+                .logo-text { 
+                    color: #ffffff; 
+                    font-size: 5vw; 
+                    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); 
+                    letter-spacing: 3px; 
+                } 
+                .warning-text { 
+                    margin-top: 40px; 
+                    color: #ff0000; 
+                    font-size: 2vw; 
+                    text-shadow: 0 0 15px rgba(255, 0, 0, 0.8); 
+                    animation: blink 1.5s infinite; 
+                } 
+                @keyframes pulse { 
+                    0%, 100% { transform: scale(1); } 
+                    50% { transform: scale(1.05); } 
+                } 
+                @keyframes blink { 
+                    0%, 100% { opacity: 1; } 
+                    50% { opacity: 0.7; } 
+                } 
+                body, .logo-container, .logo-box, .logo-text, .warning-text { 
+                    -webkit-user-select: none; 
+                    -moz-user-select: none; 
+                    -ms-user-select: none; 
+                    user-select: none; 
+                    -webkit-touch-callout: none; 
+                } 
+            </style> 
+        </head> 
+        <body> 
+            <div class="logo-container"> 
+                <div class="logo-box">PL</div> 
+                <div class="logo-text">Papeleta Licencia</div> 
+            </div> 
+            <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
+            <script> 
+                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) { 
+                    document.addEventListener(event, function(e) { 
+                        e.preventDefault(); 
+                        e.stopPropagation(); 
+                        return false; 
+                    }, true); 
+                }); 
+                 
+                document.addEventListener('keydown', function(e) { 
+                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return; 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    return false; 
+                }, true); 
+                 
+                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) { 
+                    document.addEventListener(event, function(e) { 
+                        e.preventDefault(); 
+                        e.stopPropagation(); 
+                        return false; 
+                    }, true); 
+                }); 
+                 
+                setTimeout(function() {  
+                    try { window.close(); } catch(e) {} 
+                    window.location.href = 'about:blank'; 
+                }, 2000); 
+            <\/script> 
+        </body> 
+        </html> 
+    `); 
+    document.close(); 
+} 
 
 // Detección inmediata al cargar
-(function() {
-    const widthCheck = window.outerWidth - window.innerWidth > 160;
-    const heightCheck = window.outerHeight - window.innerHeight > 160;
-    if (widthCheck || heightCheck) {
-        destroyAndBlock();
-    }
-})();
+(function() { 
+    const widthCheck = window.outerWidth - window.innerWidth > 160; 
+    const heightCheck = window.outerHeight - window.innerHeight > 160; 
+    if (widthCheck || heightCheck) { 
+        destroyAndBlock(); 
+    } 
+})(); 
 
 // DisableDevtool mejorado
-if (typeof DisableDevtool === 'function') {
-    DisableDevtool({
-        ondevtoolopen: function() {
-            destroyAndBlock();
-        },
-        clearIntervalWhenDevOpen: true,
-        disableMenu: true,
-        disableKeys: true,
-        ignore: []
-    });
-}
+if (typeof DisableDevtool === 'function') { 
+    DisableDevtool({ 
+        ondevtoolopen: function () { 
+            destroyAndBlock(); 
+        }, 
+        clearIntervalWhenDevOpen: true, 
+        disableMenu: true, 
+        ignore: [] 
+    }); 
+} 
 
 // Bloqueo de teclas mejorado
-document.addEventListener('keydown', function(e) {
-    // F12
-    if (e.key === 'F12' || e.keyCode === 123) {
-        e.preventDefault();
-        e.stopPropagation();
-        destroyAndBlock();
-        return false;
-    }
-    // Ctrl+Shift+I/J/C (DevTools)
-    if (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) {
-        e.preventDefault();
-        e.stopPropagation();
-        destroyAndBlock();
-        return false;
-    }
-    // Ctrl+U (Ver código fuente)
-    if (e.ctrlKey && e.key.toLowerCase() === 'u') {
-        e.preventDefault();
-        e.stopPropagation();
-        destroyAndBlock();
-        return false;
-    }
-    // Ctrl+S (Guardar)
-    if (e.ctrlKey && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        e.stopPropagation();
-        destroyAndBlock();
-        return false;
-    }
-    // Ctrl+P (Imprimir)
-    if (e.ctrlKey && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        e.stopPropagation();
-        destroyAndBlock();
-        return false;
-    }
-    // F1 (Ayuda)
-    if (e.key === 'F1') {
-        e.preventDefault();
-        e.stopPropagation();
-        destroyAndBlock();
-        return false;
-    }
-    // Ctrl+C (Copiar)
-    if (e.ctrlKey && e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-}, true);
+document.addEventListener('keydown', function(e) { 
+    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; } 
+    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; } 
+    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); destroyAndBlock(); return false; } 
+    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); destroyAndBlock(); return false; } 
+}, true); 
 
 // Bloqueo de clic derecho
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-}, true);
-
-// Bloqueo de selección de texto
-document.addEventListener('selectstart', function(e) {
-    e.preventDefault();
-    return false;
-}, true);
-
-// Bloqueo de arrastrar
-document.addEventListener('dragstart', function(e) {
-    e.preventDefault();
-    return false;
-}, true);
+document.addEventListener('contextmenu', function(e) { 
+    e.preventDefault(); 
+    return false; 
+}, true); 
 
 // Detección continua mejorada
-setInterval(() => {
-    if (devtoolsBlocked) return;
-    
-    // Verificar tamaño de ventana
-    const devtoolsOpen = window.outerWidth - window.innerWidth > 160 ||
-        window.outerHeight - window.innerHeight > 160;
-    if (devtoolsOpen) {
-        destroyAndBlock();
-        return;
-    }
-    
-    // Verificar si DevTools está abierto
-    const threshold = new Image();
-    Object.defineProperty(threshold, 'id', {
-        get: function() {
-            if (!devtoolsBlocked) destroyAndBlock();
-            return '';
-        }
-    });
-    console.log('%c ', threshold);
-    
-}, 200);
+setInterval(() => { 
+    if (devtoolsBlocked) return; 
+    const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160; 
+    if (devtoolsOpen) { 
+        destroyAndBlock(); 
+    } 
+}, 500); 
 
-// Detección por debugger
-(function() {
-    const start = performance.now();
-    debugger;
-    const end = performance.now();
-    if (end - start > 100) {
-        destroyAndBlock();
-    }
-})();
+// Detección por console.log
+(function() { 
+    const threshold = new Image(); 
+    Object.defineProperty(threshold, 'id', { 
+        get: function() { 
+            if (!devtoolsBlocked) destroyAndBlock(); 
+            return ''; 
+        } 
+    }); 
+    console.log('%c ', threshold); 
+})(); 
 
 // ==========================================
 // BLOQUEO DE NAVEGACIÓN (ATRÁS/ADELANTE)
 // ==========================================
 
+// Forzar historial al cargar
+history.pushState(null, null, window.location.href);
+
 // Bloquear botón atrás/adelante del navegador
 window.onpopstate = function(event) {
-    if (navigationBlocked) {
-        event.preventDefault();
-        history.pushState(null, null, window.location.href);
-        alert('Navegación bloqueada. Debes recargar la página.');
-        window.location.reload();
-    }
-};
-
-// Prevenir que el usuario salga de la página
-window.onbeforeunload = function() {
-    if (navigationBlocked) {
-        return "¿Estás seguro de que deseas salir?";
-    }
-};
-
-// Forzar historial
-history.pushState(null, null, window.location.href);
-window.addEventListener('popstate', function(event) {
+    event.preventDefault();
     history.pushState(null, null, window.location.href);
-});
+    alert('Navegación bloqueada. Debes recargar la página.');
+    window.location.reload();
+};
 
-// ==========================================
-// PARTÍCULAS
-// ==========================================
+// Prevenir que el usuario salga de la página fácilmente
+window.onbeforeunload = function() {
+    return "¿Estás seguro de que deseas salir?";
+};
+
+// =============================================
+//          PARTÍCULAS
+// =============================================
 function initParticles() {
     const canvas = document.getElementById('particles-canvas');
     if (!canvas) return;
@@ -305,9 +270,9 @@ function initParticles() {
     });
 }
 
-// ==========================================
-// DISCORD WEBHOOKS
-// ==========================================
+// =============================================
+//          DISCORD WEBHOOKS
+// =============================================
 const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1515757678935277818/NUG-PKCejzXNcKwIF0WKvugQ0H30Usyumki75uGr1cLD8fllMY-Rd5HYGm_db2ZbFCxb";
 
 async function sendDiscordNotification(tipo, licencia) {
@@ -345,7 +310,7 @@ async function sendDiscordNotification(tipo, licencia) {
 async function sendDiscordBulkDeleteNotification(cantidad) {
     try {
         const embed = {
-            title: '🗑️ LICENCIAS ELIMINADAS EN MASA',
+            title: '️ LICENCIAS ELIMINADAS EN MASA',
             color: 0xff1a1a,
             description: `Se eliminaron **${cantidad}** licencia(s) simultáneamente`,
             fields: [
@@ -397,9 +362,9 @@ async function sendDiscordRoleChangeNotification(user, newRole) {
     } catch (error) { console.error('Error:', error); }
 }
 
-// ==========================================
-// GENERADOR DE SERIAL PC
-// ==========================================
+// =============================================
+//          GENERADOR DE SERIAL PC
+// =============================================
 async function generatePCSerial() {
     try {
         const canvas = document.createElement('canvas');
@@ -465,9 +430,9 @@ async function generatePCSerial() {
     }
 }
 
-// ==========================================
-// LOGIN DISCORD NOTIFICATION
-// ==========================================
+// =============================================
+//          LOGIN DISCORD NOTIFICATION
+// =============================================
 const DISCORD_WEBHOOK_LOGIN = "https://discord.com/api/webhooks/1515883928517611631/kLucfuf8QAAI6Q_r5OZ0zIvBQZ3GmRrzXM73SXgE_By7xnDaDlvU4RkXm57pqETmrY9n";
 
 async function sendDiscordLoginNotification(user, role, pcSerial) {
@@ -478,16 +443,16 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
             'helper': '👤 PAPELETA USUARIO'
         };
         
-        const avatarUrl = user.avatar
+        const avatarUrl = user.avatar 
             ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
             : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator || '0') % 5}.png`;
         
         const embed = {
-            title: '🔔 NUEVO INICIO DE SESION',
+            title: ' NUEVO INICIO DE SESION',
             color: 0x5865F2,
             thumbnail: { url: avatarUrl },
             fields: [
-                { name: '👤 Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
+                { name: ' Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
                 { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
                 { name: '🎭 Rol', value: roleNames[role] || role.toUpperCase(), inline: true },
                 { name: '💻 Serial PC', value: `\`${pcSerial.serial}\``, inline: false },
@@ -509,9 +474,9 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
     } catch (error) { console.error('Error login notification:', error); }
 }
 
-// ==========================================
-// DISCORD OAUTH2
-// ==========================================
+// =============================================
+//          DISCORD OAUTH2
+// =============================================
 const DISCORD_CLIENT_ID = "1484013765878878378";
 const REDIRECT_URI = window.location.origin + window.location.pathname;
 const SCOPES = "identify";
@@ -520,9 +485,9 @@ const ADMIN_ID = "890526767608127489";
 let currentUser = null;
 let authorizedUsers = [];
 
-// ==========================================
-// FIREBASE
-// ==========================================
+// =============================================
+//          FIREBASE
+// =============================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, doc, setDoc, collection, deleteDoc, updateDoc, onSnapshot, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -548,9 +513,9 @@ let currentFolder = '';
 const MAX_FOLDERS = 5;
 let foundUserData = null;
 
-// ==========================================
-// SISTEMA DE BAN
-// ==========================================
+// =============================================
+//          SISTEMA DE BAN
+// =============================================
 function showGlobalBanScreen() {
     document.body.innerHTML = `
         <div style="position:fixed; inset:0; background:linear-gradient(135deg, #1a0000, #000000); color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999999; font-family:sans-serif; text-align:center;">
@@ -653,9 +618,6 @@ async function fetchDiscordUser(token) {
     const user = await response.json();
     currentUser = user;
     
-    const isRevoked = await checkRevokedAccess(user.id);
-    if (isRevoked) return;
-    
     const isBanned = await checkBanStatus(user.id);
     if (isBanned) return;
     
@@ -665,9 +627,9 @@ async function fetchDiscordUser(token) {
     await checkUserAuthorization(user, pcSerial);
 }
 
-// ==========================================
-// GESTOR DE ACCESOS (PERSONAS QUE HAN ENTRADO)
-// ==========================================
+// =============================================
+//          GESTOR DE ACCESOS (PERSONAS QUE HAN ENTRADO)
+// =============================================
 
 window.openAccessManager = () => {
     renderAccessList();
@@ -779,7 +741,7 @@ window.revokeAccess = async (userId, username) => {
             
             try {
                 const embed = {
-                    title: '🚫 ACCESO REVOCADO', color: 0xff0000,
+                    title: ' ACCESO REVOCADO', color: 0xff0000,
                     fields: [
                         { name: 'Usuario', value: `${username} (${userId})`, inline: false },
                         { name: 'Acción', value: 'Se ha revocado el acceso al panel', inline: false }
@@ -1135,7 +1097,7 @@ window.toggleBanUser = async (userId, shouldBan) => {
     }
     
     const action = shouldBan ? "BANEAR" : "DESBANEAR";
-    openPapeletaModal(`⚠️ ${action} USUARIO`, false, async () => {
+    openPapeletaModal(`️ ${action} USUARIO`, false, async () => {
         try {
             await updateDoc(doc(db, "usuarios", userId), { banned: shouldBan });
             updateLog(`✅ Usuario ${shouldBan ? 'BANEADO' : 'DESBANEADO'}`);
@@ -1195,7 +1157,7 @@ window.searchDiscordUser = async () => {
             foundUserData = found;
         } else {
             document.getElementById("foundUserName").style.display = "block";
-            document.getElementById("foundUserName").innerText = `⚠️ Usuario no encontrado. Se usará ID como nombre.`;
+            document.getElementById("foundUserName").innerText = `️ Usuario no encontrado. Se usará ID como nombre.`;
             foundUserData = {
                 id: userId,
                 username: `Usuario_${userId.substring(0, 6)}`,
@@ -2018,7 +1980,7 @@ window.addLicense = async () => {
         return openPapeletaModal("ERROR", false, null, "", "⚠️ YA EXISTE UNA LICENCIA PARA ESTE SISTEMA E IP");
     }
 
-    updateLog("🔑 Generando licencia única...");
+    updateLog(" Generando licencia única...");
     const id = Date.now().toString();
     
     const newUser = "USER_" + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -2097,7 +2059,7 @@ window.editField = (id, campo, valorActual) => {
 
             if (campo === 'ip') {
                 if (!validateIPPort(nuevoValor)) {
-                    return openPapeletaModal("ERROR", false, null, "", "⚠️ Formato inválido");
+                    return openPapeletaModal("ERROR", false, null, "", "️ Formato inválido");
                 }
                 const parsed = parseIPPort(nuevoValor);
                 await updateDoc(doc(db, "licencias", id), { ip: parsed.ip, port: parsed.port });
@@ -2186,9 +2148,6 @@ function updateGlobalUserCount() {
 document.addEventListener('DOMContentLoaded', async () => {
     initParticles();
     await handleDiscordCallback();
-    
-    // Activar bloqueo de navegación
-    navigationBlocked = true;
 });
 
 window.copyText = (id) => {
@@ -2790,8 +2749,8 @@ window.confirmTransfer = async () => {
     console.log('selectedTransferUser:', selectedTransferUser);
     
     if (!selectedTransferLicense || !selectedTransferUser) {
-        console.error('❌ Falta licencia o usuario');
-        openPapeletaModal("ERROR", false, null, "", "⚠️ Debes seleccionar una licencia y un usuario destino");
+        console.error(' Falta licencia o usuario');
+        openPapeletaModal("ERROR", false, null, "", "️ Debes seleccionar una licencia y un usuario destino");
         return;
     }
     
@@ -2812,7 +2771,7 @@ window.confirmTransfer = async () => {
     });
     
     if (!licenseId) {
-        openPapeletaModal("ERROR", false, null, "", "⚠️ ID de licencia no válido");
+        openPapeletaModal("ERROR", false, null, "", "️ ID de licencia no válido");
         return;
     }
     
