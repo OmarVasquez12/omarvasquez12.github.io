@@ -1321,6 +1321,29 @@
     </div>
 </div>
 
+<!-- NUEVO MODAL: GESTOR DE ACCESOS -->
+<div class="modal-overlay" id="accessManagerModal">
+    <div class="edit-options-content" style="max-width:700px;">
+        <h3><i class="fa-solid fa-user-shield"></i> Gestionar Accesos</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Personas que han ingresado al sistema</p>
+        
+        <div class="users-list" id="accessList" style="max-height:400px;"></div>
+        
+        <button class="btn-close-edit" onclick="closeAccessManager()" style="margin-top:1rem;">
+            <i class="fa-solid fa-xmark"></i> Cerrar
+        </button>
+    </div>
+</div>
+
+<!-- Página de Error 404 -->
+<div id="error404Page" style="display:none; position:fixed; inset:0; background:#000; z-index:999999;">
+    <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; color:#000; font-family:'Courier New', monospace;">
+        <h1 style="font-size:8rem; margin:0; color:#000; text-shadow:0 0 20px rgba(0,0,0,0.5);">404</h1>
+        <p style="font-size:1.5rem; color:#000; margin-top:1rem;">ACCESO DENEGADO</p>
+        <p style="font-size:0.9rem; color:#000; opacity:0.7;">Página no encontrada</p>
+    </div>
+</div>
+
 <!-- Panel de Links -->
 <div id="linksPanel">
     <button class="links-panel-close" onclick="closeLinksPanel()" title="Cerrar">
@@ -1422,6 +1445,12 @@
                     <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">GESTIÓN DE ACCESO:</label>
                     <button class="btn-action-small" style="width:100%; background:var(--discord-blue); border-color:var(--discord-blue);" onclick="openUsersModal()">
                         <i class="fa-solid fa-users"></i> Usuarios Autorizados
+                    </button>
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">PERSONAS AUTORIZADAS:</label>
+                    <button class="btn-action-small" style="width:100%; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); border-color: var(--primary);" onclick="openAccessManager()">
+                        <i class="fa-solid fa-user-shield"></i> Personas Autorizadas
                     </button>
                 </div>
                 <div>
