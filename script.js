@@ -373,7 +373,7 @@ async function sendDiscordRoleChangeNotification(user, newRole) {
         };
         
         const embed = {
-            title: '🔄 CAMBIO DE ROL',
+            title: ' CAMBIO DE ROL',
             color: 0x5865F2,
             fields: [
                 { name: 'Usuario', value: `${user.username} (${user.id})`, inline: false },
@@ -484,7 +484,7 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
             color: 0x5865F2,
             thumbnail: { url: avatarUrl },
             fields: [
-                { name: '👤 Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
+                { name: ' Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
                 { name: ' ID', value: `\`${user.id}\``, inline: true },
                 { name: ' Rol', value: roleNames[role] || role.toUpperCase(), inline: true },
                 { name: '💻 Serial PC', value: `\`${pcSerial.serial}\``, inline: false },
@@ -699,10 +699,27 @@ function renderAccessList() {
         list.innerHTML = "";
         let hasAccess = false;
         
+        // Guardamos los datos en un array temporal para poder ordenarlos
+        let usersArray = [];
+        
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            if (data.revoked === true) return; // No mostrar los revocados
+            if (data.revoked === true) return; // No mostramos los que ya fueron tumbados
             
+            usersArray.push(data);
+        });
+
+        // ORDENAR ALFABÉTICAMENTE (DE LA A A LA Z) POR NOMBRE DE USUARIO
+        usersArray.sort((a, b) => {
+            const nameA = a.username.toLowerCase();
+            const nameB = b.username.toLowerCase();
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+        });
+
+        // Renderizamos la lista ya ordenada
+        usersArray.forEach(data => {
             hasAccess = true;
             const item = document.createElement("div");
             item.className = "user-item";
@@ -852,6 +869,23 @@ async function checkUserAuthorization(user, pcSerial = null) {
     
     // Incrementar contador de accesos
     await incrementAccessCount(user.id);
+
+    // ==========================================
+    // NUEVO: VIGILANTE DE EXPULSIÓN INMEDIATA
+    // ==========================================
+    // Escucha cambios en la base de datos en tiempo real para este usuario específico
+    const myAccessRef = doc(db, "accesos", user.id);
+    onSnapshot(myAccessRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Si el admin marcó 'revoked: true', expulsar inmediatamente
+            if (data.revoked === true) {
+                console.log("Acceso revocado en tiempo real. Expulsando...");
+                show404Page(); 
+            }
+        }
+    });
+    // ==========================================
 
     document.getElementById("lockScreen").style.display = "none";
     document.getElementById("mainWrapper").style.display = "block";
@@ -2723,7 +2757,7 @@ window.confirmTransfer = async () => {
             
             try {
                 const embed = {
-                    title: '🔄 LICENCIA TRANSFERIDA',
+                    title: ' LICENCIA TRANSFERIDA',
                     color: 0x5865F2,
                     fields: [
                         { name: 'Licencia', value: licenseResource, inline: true },
