@@ -1,10 +1,14 @@
-
 let devtoolsBlocked = false; 
- 
+
 function destroyAndBlock() { 
     if (devtoolsBlocked) return; 
     devtoolsBlocked = true; 
-     
+    
+    // Cerrar cualquier modal abierto inmediatamente
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.style.display = 'none';
+    });
+    
     document.open(); 
     document.write(` 
         <!DOCTYPE html> 
@@ -91,7 +95,7 @@ function destroyAndBlock() {
             </div> 
             <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
             <script> 
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) { 
+                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'wheel'].forEach(function(event) { 
                     document.addEventListener(event, function(e) { 
                         e.preventDefault(); 
                         e.stopPropagation(); 
@@ -100,7 +104,7 @@ function destroyAndBlock() {
                 }); 
                  
                 document.addEventListener('keydown', function(e) { 
-                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return; 
+                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock' || e.key === 'Escape') return; 
                     e.preventDefault(); 
                     e.stopPropagation(); 
                     return false; 
@@ -117,14 +121,15 @@ function destroyAndBlock() {
                 setTimeout(function() {  
                     try { window.close(); } catch(e) {} 
                     window.location.href = 'about:blank'; 
-                }, 2000); 
+                }, 1000); 
             <\/script> 
         </body> 
         </html> 
     `); 
     document.close(); 
 } 
- 
+
+// Detección inmediata al cargar
 (function() { 
     const widthCheck = window.outerWidth - window.innerWidth > 160; 
     const heightCheck = window.outerHeight - window.innerHeight > 160; 
@@ -132,7 +137,8 @@ function destroyAndBlock() {
         destroyAndBlock(); 
     } 
 })(); 
- 
+
+// DisableDevtool mejorado
 if (typeof DisableDevtool === 'function') { 
     DisableDevtool({ 
         ondevtoolopen: function () { 
@@ -140,31 +146,76 @@ if (typeof DisableDevtool === 'function') {
         }, 
         clearIntervalWhenDevOpen: true, 
         disableMenu: true, 
+        disableKeys: true,
         ignore: [] 
     }); 
 } 
- 
+
+// Bloqueo de teclas mejorado
 document.addEventListener('keydown', function(e) { 
-    if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); destroyAndBlock(); return false; } 
-    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { e.preventDefault(); destroyAndBlock(); return false; } 
-    if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); destroyAndBlock(); return false; } 
-    if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); destroyAndBlock(); return false; } 
+    // F12
+    if (e.key === 'F12' || e.keyCode === 123) { 
+        e.preventDefault(); 
+        e.stopPropagation();
+        destroyAndBlock(); 
+        return false; 
+    } 
+    // Ctrl+Shift+I/J/C (DevTools)
+    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
+        e.preventDefault(); 
+        e.stopPropagation();
+        destroyAndBlock(); 
+        return false; 
+    } 
+    // Ctrl+U (Ver código fuente)
+    if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
+        e.preventDefault(); 
+        e.stopPropagation();
+        destroyAndBlock(); 
+        return false; 
+    } 
+    // Ctrl+S (Guardar)
+    if (e.ctrlKey && e.key.toLowerCase() === 's') { 
+        e.preventDefault(); 
+        e.stopPropagation();
+        destroyAndBlock(); 
+        return false; 
+    } 
+    // Ctrl+P (Imprimir)
+    if (e.ctrlKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        e.stopPropagation();
+        destroyAndBlock();
+        return false;
+    }
+    // F1 (Ayuda)
+    if (e.key === 'F1') {
+        e.preventDefault();
+        e.stopPropagation();
+        destroyAndBlock();
+        return false;
+    }
 }, true); 
- 
+
+// Bloqueo de clic derecho
 document.addEventListener('contextmenu', function(e) { 
     e.preventDefault(); 
     return false; 
 }, true); 
- 
+
+// Detección continua mejorada
 setInterval(() => { 
     if (devtoolsBlocked) return; 
-    const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160; 
+    
+    // Verificar tamaño de ventana
+    const devtoolsOpen = window.outerWidth - window.innerWidth > 160 || 
+                         window.outerHeight - window.innerHeight > 160; 
     if (devtoolsOpen) { 
         destroyAndBlock(); 
+        return;
     } 
-}, 500); 
- 
-(function() { 
+    
+    // Verificar si DevTools está abierto
     const threshold = new Image(); 
     Object.defineProperty(threshold, 'id', { 
         get: function() { 
@@ -173,7 +224,19 @@ setInterval(() => {
         } 
     }); 
     console.log('%c ', threshold); 
-})(); 
+    
+}, 200); // Reducido a 200ms para mayor rapidez
+
+// Detección por debugger
+(function() { 
+    const start = performance.now(); 
+    debugger; 
+    const end = performance.now(); 
+    if (end - start > 100) { 
+        destroyAndBlock(); 
+    } 
+})();
+
 // =============================================
 //          PARTÍCULAS
 // =============================================
@@ -422,7 +485,7 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
             thumbnail: { url: avatarUrl },
             fields: [
                 { name: '👤 Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
-                { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
+                { name: ' ID', value: `\`${user.id}\``, inline: true },
                 { name: ' Rol', value: roleNames[role] || role.toUpperCase(), inline: true },
                 { name: '💻 Serial PC', value: `\`${pcSerial.serial}\``, inline: false },
                 { name: '🌐 Navegador', value: `\`\`\`${navigator.userAgent.substring(0, 100)}...\`\`\``, inline: false },
@@ -596,12 +659,173 @@ async function fetchDiscordUser(token) {
     await checkUserAuthorization(user, pcSerial);
 }
 
+// =============================================
+//          GESTOR DE ACCESOS (PERSONAS QUE HAN ENTRADO)
+// =============================================
+
+window.openAccessManager = () => {
+    renderAccessList();
+    document.getElementById("accessManagerModal").style.display = "flex";
+};
+
+window.closeAccessManager = () => {
+    document.getElementById("accessManagerModal").style.display = "none";
+};
+
+async function trackUserAccess(user, pcSerial) {
+    try {
+        const accessRef = doc(db, "accesos", user.id);
+        await setDoc(accessRef, {
+            id: user.id,
+            username: user.username,
+            discriminator: user.discriminator || "0000",
+            avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : `https://cdn.discordapp.com/embed/avatars/0.png`,
+            lastAccess: new Date().toISOString(),
+            pcSerial: pcSerial.serial,
+            userAgent: navigator.userAgent.substring(0, 100),
+            accessCount: 1,
+            revoked: false
+        }, { merge: true });
+    } catch (error) {
+        console.error("Error tracking access:", error);
+    }
+}
+
+function renderAccessList() {
+    const list = document.getElementById("accessList");
+    list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">Cargando...</div>';
+    
+    onSnapshot(collection(db, "accesos"), (snapshot) => {
+        list.innerHTML = "";
+        let hasAccess = false;
+        
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data.revoked === true) return; // No mostrar los revocados
+            
+            hasAccess = true;
+            const item = document.createElement("div");
+            item.className = "user-item";
+            
+            const lastDate = new Date(data.lastAccess).toLocaleString('es-DO');
+            
+            item.innerHTML = `
+                <img src="${data.avatar}" alt="Avatar" style="border:2px solid var(--primary);">
+                <div class="user-item-info">
+                    <div class="name">${data.username}#${data.discriminator}</div>
+                    <div class="id">ID: ${data.id}</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">
+                        Último acceso: ${lastDate} | Accesos: ${data.accessCount || 1}
+                    </div>
+                </div>
+                <button class="btn-remove-user" onclick="revokeAccess('${data.id}', '${data.username}')" style="background:var(--danger);">
+                    <i class="fa-solid fa-ban"></i> Tumbar Acceso
+                </button>
+            `;
+            list.appendChild(item);
+        });
+        
+        if (!hasAccess) {
+            list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No hay registros de acceso</div>';
+        }
+    });
+}
+
+window.revokeAccess = async (userId, username) => {
+    openPapeletaModal("⚠️ CONFIRMAR", false, async () => {
+        try {
+            // Marcar como revocado en la colección de accesos
+            await updateDoc(doc(db, "accesos", userId), { 
+                revoked: true,
+                revokedAt: new Date().toISOString()
+            });
+            
+            // Eliminar de la colección de usuarios autorizados si existe
+            try {
+                await deleteDoc(doc(db, "usuarios", userId));
+            } catch (e) {
+                console.log("Usuario no estaba en autorizados");
+            }
+            
+            updateLog(`✅ Acceso revocado para ${username}`);
+            renderAccessList();
+            
+            // Notificar por Discord
+            try {
+                const embed = {
+                    title: ' ACCESO REVOCADO',
+                    color: 0xff0000,
+                    fields: [
+                        { name: 'Usuario', value: `${username} (${userId})`, inline: false },
+                        { name: 'Acción', value: 'Se ha revocado el acceso al panel', inline: false }
+                    ],
+                    footer: { text: 'Papeleta Licencia System' },
+                    timestamp: new Date().toISOString()
+                };
+                
+                await fetch(DISCORD_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ embeds: [embed] })
+                });
+            } catch (e) {
+                console.error("Error enviando webhook:", e);
+            }
+            
+        } catch (error) {
+            openPapeletaModal("ERROR", false, null, "", `Error: ${error.message}`);
+        }
+    }, "", `¿Revocar acceso a "${username}"?\n\nAl aceptar, esta persona verá una página de error 404 al intentar entrar.`);
+};
+
+function show404Page() {
+    document.body.innerHTML = '';
+    document.getElementById("error404Page").style.display = "block";
+    document.body.style.overflow = "hidden";
+    throw new Error("Acceso Revocado - 404");
+}
+
+async function checkRevokedAccess(userId) {
+    if (!userId) return false;
+    try {
+        const accessRef = doc(db, "accesos", userId);
+        const accessSnap = await getDoc(accessRef);
+        if (accessSnap.exists()) {
+            const data = accessSnap.data();
+            if (data.revoked === true) {
+                show404Page();
+                return true;
+            }
+        }
+    } catch (e) { 
+        console.error("Error verificando acceso revocado:", e); 
+    }
+    return false;
+}
+
+// Incrementar contador de accesos
+async function incrementAccessCount(userId) {
+    try {
+        const accessRef = doc(db, "accesos", userId);
+        await updateDoc(accessRef, {
+            accessCount: 1,
+            lastAccess: new Date().toISOString()
+        }, { merge: true });
+    } catch (e) {
+        console.error("Error incrementing access count:", e);
+    }
+}
+
 async function checkUserAuthorization(user, pcSerial = null) {
     await new Promise(resolve => {
         const checkInterval = setInterval(() => {
             if (authorizedUsers !== null) { clearInterval(checkInterval); resolve(); }
         }, 100);
     });
+    
+    // Verificar si el acceso fue revocado
+    const isRevoked = await checkRevokedAccess(user.id);
+    if (isRevoked) return;
     
     let userData = authorizedUsers.find(u => u.id === user.id);
     let role = userData ? userData.role : 'helper';
@@ -620,9 +844,14 @@ async function checkUserAuthorization(user, pcSerial = null) {
         userData = { id: user.id, role: 'helper', username: user.username, avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '' };
     }
 
+    // Rastrear el acceso
     if (pcSerial) {
+        await trackUserAccess(user, pcSerial);
         await sendDiscordLoginNotification(user, role, pcSerial);
     }
+    
+    // Incrementar contador de accesos
+    await incrementAccessCount(user.id);
 
     document.getElementById("lockScreen").style.display = "none";
     document.getElementById("mainWrapper").style.display = "block";
@@ -1722,7 +1951,7 @@ window.addLicense = async () => {
 
 window.deleteLicense = (id) => {
     const licencia = licensesData.find(l => l.id === id);
-    openPapeletaModal("⚠️ ADVERTENCIA", false, async () => {
+    openPapeletaModal("️ ADVERTENCIA", false, async () => {
         await deleteDoc(doc(db, "licencias", id));
         updateLog("✅ Licencia Eliminada");
         if (licencia) sendDiscordNotification('eliminada', licencia);
