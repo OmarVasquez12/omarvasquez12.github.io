@@ -1030,7 +1030,7 @@ window.toggleBanUser = async (userId, shouldBan) => {
     }
     
     const action = shouldBan ? "BANEAR" : "DESBANEAR";
-    openPapeletaModal(`⚠️ ${action} USUARIO`, false, async () => {
+    openPapeletaModal(`️ ${action} USUARIO`, false, async () => {
         try {
             await updateDoc(doc(db, "usuarios", userId), { banned: shouldBan });
             updateLog(`✅ Usuario ${shouldBan ? 'BANEADO' : 'DESBANEADO'}`);
@@ -1511,7 +1511,7 @@ window.applyActionToSelected = async (field) => {
                 selectedLicenseIds.clear();
                 loadLicensesForFolder();
             } catch (e) {
-                updateLog(`❌ Error: ${e.message}`, true);
+                updateLog(` Error: ${e.message}`, true);
                 setTimeout(() => openPapeletaModal("ERROR", false, null, "", `Error: ${e.message}`), 200);
             }
         }
@@ -2179,7 +2179,7 @@ function renderUserLicensesManagementList(filterText = "") {
                     </span>
                     <span style="color:var(--primary); font-weight:700; font-size:0.95rem;">${lic.resource || 'N/A'}</span>
                 </div>
-                <span style="color:var(--text-muted); font-size:0.8rem;">👤 ${lic.user}</span>
+                <span style="color:var(--text-muted); font-size:0.8rem;"> ${lic.user}</span>
             </div>
             
             <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-bottom:0.5rem;">
@@ -2639,7 +2639,7 @@ function renderTransferUserList() {
 }
 
 window.selectTransferLicense = (license) => {
-    console.log('📋 Licencia seleccionada:', license);
+    console.log(' Licencia seleccionada:', license);
     selectedTransferLicense = license;
     renderTransferLicenseList();
     updateTransferSummary();
