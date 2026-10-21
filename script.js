@@ -313,7 +313,7 @@ const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1515757678935277818/NU
 async function sendDiscordNotification(tipo, licencia) {
     try {
         const colores = { 'creada': 0x00ff44, 'eliminada': 0xff1a1a };
-        const emojis = { 'creada': '✅', 'eliminada': '️' };
+        const emojis = { 'creada': '✅', 'eliminada': '🗑️' };
         const folderName = foldersData.find(f => f.id === (licencia.IDCARPETA || currentFolder))?.name || 'N/A';
         
         const embed = {
@@ -487,7 +487,7 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
             color: 0x5865F2,
             thumbnail: { url: avatarUrl },
             fields: [
-                { name: ' Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
+                { name: '👤 Usuario', value: `${user.username}#${user.discriminator || '0000'}\n<@${user.id}>`, inline: true },
                 { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
                 { name: '🎭 Rol', value: roleNames[role] || role.toUpperCase(), inline: true },
                 { name: '💻 Serial PC', value: `\`${pcSerial.serial}\``, inline: false },
@@ -779,7 +779,7 @@ window.revokeAccess = async (userId, username) => {
             
             try {
                 const embed = {
-                    title: ' ACCESO REVOCADO', color: 0xff0000,
+                    title: '🚫 ACCESO REVOCADO', color: 0xff0000,
                     fields: [
                         { name: 'Usuario', value: `${username} (${userId})`, inline: false },
                         { name: 'Acción', value: 'Se ha revocado el acceso al panel', inline: false }
@@ -1105,7 +1105,7 @@ function renderUsersList() {
         
         let deleteBtnHtml = '';
         if (user.id !== ADMIN_ID) {
-            const banBtnText = user.banned ? "✅ Desbanear" : " Banear";
+            const banBtnText = user.banned ? "✅ Desbanear" : "🚫 Banear";
             const banBtnColor = user.banned ? "var(--success)" : "var(--danger)";
             
             deleteBtnHtml = `
@@ -1628,7 +1628,7 @@ window.deleteSelectedLicenses = () => {
     const idsToDelete = new Set(selectedLicenseIds);
     const countToDelete = idsToDelete.size;
     document.getElementById("editOptionsModal").style.display = "none";
-    openPapeletaModal("️ CONFIRMAR", false, async () => {
+    openPapeletaModal("⚠️ CONFIRMAR", false, async () => {
         updateLog(`🗑️ Eliminando ${countToDelete} licencia(s)...`);
         try {
             const promises = [];
@@ -1793,7 +1793,7 @@ window.editLink = (linkId) => {
 };
 
 window.deleteLink = (linkId) => {
-    openPapeletaModal("️ ELIMINAR LINK", false, async () => {
+    openPapeletaModal("⚠️ ELIMINAR LINK", false, async () => {
         try {
             await deleteDoc(doc(db, "links", linkId));
             openPapeletaModal("✅ ÉXITO", false, null, "", "Link eliminado");
@@ -2009,7 +2009,7 @@ window.addLicense = async () => {
     const ipPort = document.getElementById("ipAddr").value.trim();
     
     if(!resource || !ipPort) return openPapeletaModal("ERROR", false, null, "", "FALTAN DATOS (Recurso e IP son obligatorios)");
-    if (!validateIPPort(ipPort)) return openPapeletaModal("ERROR", false, null, "", "️ FORMATO INVÁLIDO\nDebe ser IP:PUERTO");
+    if (!validateIPPort(ipPort)) return openPapeletaModal("ERROR", false, null, "", "⚠️ FORMATO INVÁLIDO\nDebe ser IP:PUERTO");
     
     const parsed = parseIPPort(ipPort);
     
@@ -2754,7 +2754,7 @@ window.selectTransferLicense = (license) => {
 };
 
 window.selectTransferUser = (user) => {
-    console.log(' Usuario seleccionado:', user);
+    console.log('👤 Usuario seleccionado:', user);
     selectedTransferUser = user;
     renderTransferUserList();
     updateTransferSummary();
