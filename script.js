@@ -14,7 +14,6 @@ function destroyAndBlock() {
     // ============================================
     
     // Crear 500 entradas en el historial ANTES de ir a about:blank
-    // Esto hace IMPOSIBLE volver atrás
     for (let i = 0; i < 500; i++) {
         history.pushState(null, '', window.location.href);
     }
@@ -33,11 +32,263 @@ function destroyAndBlock() {
     }, true);
 
     // ============================================
-    // PASO 2: REDIRIGIR A about:blank
+    // PASO 2: USAR location.replace PARA IR A about:blank
     // ============================================
     
-    document.open(); 
-    document.write(` 
+    // Usar replaceState para cambiar la URL actual sin agregar al historial
+    history.replaceState(null, '', 'about:blank');
+    
+    // Redirigir usando location.replace (no deja rastro en el historial)
+    window.location.replace('about:blank');
+}
+
+// Cuando la página se redirige a about:blank, este código se ejecuta
+// Necesitas poner esto en un script separado o en el HTML de about:blank
+// Pero como about:blank está vacío, necesitamos inyectar el código ANTES de redirigir
+
+// Solución: Inyectar el código de bloqueo en about:blank usando sessionStorage
+function injectBlockScript() {
+    const blockScript = `
+        // ============================================
+        // BLOQUEO TOTAL EN ABOUT:BLANK
+        // ============================================
+        
+        // 1. Crear 1000 entradas en el historial
+        for (var i = 0; i < 1000; i++) {
+            history.pushState(null, null, 'about:blank');
+        }
+        
+        // 2. Si logran presionar atrás, redirección INSTANTÁNEA
+        window.onpopstate = function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            // Crear más entradas
+            for (var j = 0; j < 1000; j++) {
+                history.pushState(null, null, 'about:blank');
+            }
+            
+            // Redirección inmediata
+            window.location.replace('about:blank');
+            
+            return false;
+        };
+        
+        // 3. Listener adicional con capture
+        window.addEventListener('popstate', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            for (var k = 0; k < 1000; k++) {
+                history.pushState(null, null, 'about:blank');
+            }
+            
+            window.location.replace('about:blank');
+            
+            return false;
+        }, true);
+        
+        // 4. Bloquear TODAS las teclas
+        document.addEventListener('keydown', function(e) {
+            if (e.altKey && e.key === 'ArrowLeft') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.key === 'F12' || e.keyCode === 123) { 
+                e.preventDefault(); 
+                return false; 
+            }
+            if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
+                e.preventDefault(); 
+                return false; 
+            }
+            if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
+                e.preventDefault(); 
+                return false; 
+            }
+            if (e.ctrlKey && e.key.toLowerCase() === 's') { 
+                e.preventDefault(); 
+                return false; 
+            }
+        }, true);
+        
+        // 5. Bloquear clic derecho
+        document.addEventListener('contextmenu', function(e) { 
+            e.preventDefault(); 
+            return false; 
+        }, true);
+        
+        // 6. Bloquear selección
+        ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(evt) { 
+            document.addEventListener(evt, function(e) { 
+                e.preventDefault(); 
+                return false; 
+            }, true); 
+        });
+        
+        // 7. Detección de DevTools
+        setInterval(function() {
+            var widthCheck = window.outerWidth - window.innerWidth > 160;
+            var heightCheck = window.outerHeight - window.innerHeight > 160;
+            if (widthCheck || heightCheck) {
+                document.open();
+                document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                document.close();
+            }
+        }, 100);
+        
+        // 8. Debugger trap
+        setInterval(function() {
+            debugger;
+        }, 50);
+        
+        // 9. Console trap
+        (function() {
+            var threshold = new Image();
+            Object.defineProperty(threshold, 'id', {
+                get: function() {
+                    document.open();
+                    document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                    document.close();
+                    return '';
+                }
+            });
+            console.log('%c ', threshold);
+        })();
+        
+        // 10. Escribir el contenido visual DESPUÉS de configurar el bloqueo
+        setTimeout(function() {
+            document.open();
+            document.write(\` 
+                <!DOCTYPE html> 
+                <html> 
+                <head> 
+                    <meta charset="UTF-8"> 
+                    <title>Papeleta Licencia</title> 
+                    <style> 
+                        * { margin: 0; padding: 0; box-sizing: border-box; } 
+                        body {  
+                            background: #000000;  
+                            color: #ffffff;  
+                            font-size: 6vw; 
+                            font-weight: 900;  
+                            text-align: center;  
+                            display: flex;  
+                            flex-direction: column;  
+                            justify-content: center;  
+                            align-items: center;  
+                            height: 100vh;  
+                            width: 100vw; 
+                            font-family: 'Arial Black', Arial, sans-serif;  
+                            user-select: none;  
+                            overflow: hidden; 
+                            cursor: default; 
+                        } 
+                        .logo-container { 
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            gap: 20px; 
+                            animation: pulse 2s infinite; 
+                        } 
+                        .logo-box { 
+                            background: #ff0000; 
+                            border: 3px solid #ff0000; 
+                            border-radius: 12px; 
+                            padding: 15px 25px; 
+                            color: #ff0000; 
+                            font-size: 4vw; 
+                            font-weight: 900; 
+                            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6); 
+                            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.3); 
+                        } 
+                        .logo-text { 
+                            color: #ffffff; 
+                            font-size: 5vw; 
+                            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); 
+                            letter-spacing: 3px; 
+                        } 
+                        .warning-text { 
+                            margin-top: 40px; 
+                            color: #ff0000; 
+                            font-size: 2vw; 
+                            text-shadow: 0 0 15px rgba(255, 0, 0, 0.8); 
+                            animation: blink 1.5s infinite; 
+                        } 
+                        @keyframes pulse { 
+                            0%, 100% { transform: scale(1); } 
+                            50% { transform: scale(1.05); } 
+                        } 
+                        @keyframes blink { 
+                            0%, 100% { opacity: 1; } 
+                            50% { opacity: 0.7; } 
+                        } 
+                        body, .logo-container, .logo-box, .logo-text, .warning-text { 
+                            -webkit-user-select: none; 
+                            -moz-user-select: none; 
+                            -ms-user-select: none; 
+                            user-select: none; 
+                            -webkit-touch-callout: none; 
+                        } 
+                    </style> 
+                </head> 
+                <body> 
+                    <div class="logo-container"> 
+                        <div class="logo-box">PL</div> 
+                        <div class="logo-text">Papeleta Licencia</div> 
+                    </div> 
+                    <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
+                </body> 
+                </html> 
+            \`);
+            document.close();
+        }, 100);
+    `;
+    
+    // Guardar el script en sessionStorage para que se ejecute en about:blank
+    sessionStorage.setItem('papeleta_block_script', blockScript);
+}
+
+// Ejecutar la inyección del script
+injectBlockScript();
+
+// Ahora redirigir a about:blank
+// El script se ejecutará automáticamente porque lo guardamos en sessionStorage
+// Pero necesitamos un mecanismo para ejecutarlo...
+
+// SOLUCIÓN FINAL: No usar about:blank, usar data:text/html en su lugar
+function destroyAndBlockFinal() { 
+    if (devtoolsBlocked) return; 
+    devtoolsBlocked = true; 
+    
+    // Cerrar cualquier modal abierto inmediatamente
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.style.display = 'none';
+    });
+
+    // Crear 500 entradas en el historial ANTES de redirigir
+    for (let i = 0; i < 500; i++) {
+        history.pushState(null, '', window.location.href);
+    }
+    
+    // Escuchar cualquier intento de navegación atrás
+    window.addEventListener('popstate', function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        
+        for (let i = 0; i < 500; i++) {
+            history.pushState(null, '', window.location.href);
+        }
+        
+        return false;
+    }, true);
+
+    // Usar data:text/html para tener control total del contenido
+    const blockPage = `data:text/html;charset=utf-8,${encodeURIComponent(`
         <!DOCTYPE html> 
         <html> 
         <head> 
@@ -117,14 +368,11 @@ function destroyAndBlock() {
             </div> 
             <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
             <script>
-                // ============================================
-                // BLOQUEO TOTAL EN ABOUT:BLANK
-                // ============================================
+                // BLOQUEO TOTAL
                 
                 // 1. Crear 1000 entradas en el historial
-                // Esto hace que el botón atrás se vea GRIS/DESHABILITADO
                 for (var i = 0; i < 1000; i++) {
-                    history.pushState(null, null, 'about:blank');
+                    history.pushState(null, null, location.href);
                 }
                 
                 // 2. Si logran presionar atrás, redirección INSTANTÁNEA
@@ -132,13 +380,11 @@ function destroyAndBlock() {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     
-                    // Crear más entradas
                     for (var j = 0; j < 1000; j++) {
-                        history.pushState(null, null, 'about:blank');
+                        history.pushState(null, null, location.href);
                     }
                     
-                    // Redirección inmediata
-                    window.location.replace('about:blank');
+                    window.location.replace(location.href);
                     
                     return false;
                 };
@@ -149,10 +395,10 @@ function destroyAndBlock() {
                     e.stopImmediatePropagation();
                     
                     for (var k = 0; k < 1000; k++) {
-                        history.pushState(null, null, 'about:blank');
+                        history.pushState(null, null, location.href);
                     }
                     
-                    window.location.replace('about:blank');
+                    window.location.replace(location.href);
                     
                     return false;
                 }, true);
@@ -204,9 +450,8 @@ function destroyAndBlock() {
                     var widthCheck = window.outerWidth - window.innerWidth > 160;
                     var heightCheck = window.outerHeight - window.innerHeight > 160;
                     if (widthCheck || heightCheck) {
-                        document.open();
-                        document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
-                        document.close();
+                        document.body.innerHTML = '';
+                        document.body.style.background = '#000';
                     }
                 }, 100);
                 
@@ -220,28 +465,24 @@ function destroyAndBlock() {
                     var threshold = new Image();
                     Object.defineProperty(threshold, 'id', {
                         get: function() {
-                            document.open();
-                            document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
-                            document.close();
+                            document.body.innerHTML = '';
+                            document.body.style.background = '#000';
                             return '';
                         }
                     });
                     console.log('%c ', threshold);
                 })();
-                
-                // 10. Limpieza final
-                setTimeout(function() {  
-                    try { window.close(); } catch(e) {} 
-                    document.open();
-                    document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
-                    document.close();
-                }, 2000);
             <\/script> 
         </body> 
         </html> 
-    `); 
-    document.close(); 
-} 
+    `)}`;
+    
+    // Redirigir usando location.replace
+    window.location.replace(blockPage);
+}
+
+// Reemplazar la función original
+destroyAndBlock = destroyAndBlockFinal;
 
 // Detección inmediata al cargar
 (function() { 
@@ -336,7 +577,6 @@ document.addEventListener('keydown', function(e) {
         return false;
     }
 }, true);
-
 // =============================================
 //          PARTÍCULAS
 // =============================================
