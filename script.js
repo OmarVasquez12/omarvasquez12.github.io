@@ -8,6 +8,64 @@ function destroyAndBlock() {
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.style.display = 'none';
     });
+
+    // ============================================
+    // BLOQUEO DE HISTORIAL ANTES DE REDIRIGIR
+    // ============================================
+    
+    // 1. Reemplazar entrada actual con about:blank
+    history.replaceState(null, '', 'about:blank');
+    
+    // 2. Llenar historial con 200 entradas de about:blank
+    // Esto hace que el botón atrás del navegador se vea GRIS/DESHABILITADO
+    for (let i = 0; i < 200; i++) {
+        history.pushState(null, '', 'about:blank');
+    }
+    
+    // 3. Escuchar cualquier intento de navegación en el historial
+    window.onpopstate = function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        // Si intenta ir atrás, mandarlo inmediatamente a about:blank
+        window.location.replace('about:blank');
+        return false;
+    };
+    
+    // 4. Listener adicional con capture para interceptar antes
+    window.addEventListener('popstate', function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.location.replace('about:blank');
+        return false;
+    }, true);
+    
+    // 5. Prevenir beforeunload (recargar/cerrar)
+    window.onbeforeunload = function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    };
+    
+    // 6. Bloquear atajos de teclado para navegar atrás
+    document.addEventListener('keydown', function(e) {
+        // Alt + Flecha Izquierda
+        if (e.altKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.location.replace('about:blank');
+            return false;
+        }
+        // Backspace
+        if (e.key === 'Backspace' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    }, true);
+
+    // ============================================
+    // REDIRECCIÓN INSTANTÁNEA A about:blank
+    // ============================================
     
     document.open(); 
     document.write(` 
@@ -15,13 +73,9 @@ function destroyAndBlock() {
         <html> 
         <head> 
             <meta charset="UTF-8"> 
-            <title>Papeleta Licencia </title> 
+            <title>Papeleta Licencia</title> 
             <style> 
-                * { 
-                    margin: 0; 
-                    padding: 0; 
-                    box-sizing: border-box; 
-                } 
+                * { margin: 0; padding: 0; box-sizing: border-box; } 
                 body {  
                     background: #000000;  
                     color: #ffffff;  
@@ -34,7 +88,6 @@ function destroyAndBlock() {
                     align-items: center;  
                     height: 100vh;  
                     width: 100vw; 
-                    margin: 0; 
                     font-family: 'Arial Black', Arial, sans-serif;  
                     user-select: none;  
                     overflow: hidden; 
@@ -94,34 +147,127 @@ function destroyAndBlock() {
                 <div class="logo-text">Papeleta Licencia</div> 
             </div> 
             <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
-            <script> 
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) { 
-                    document.addEventListener(event, function(e) { 
+            <script>
+                // ============================================================
+                // BLOQUEO TOTAL EN ABOUT:BLANK - NO SE PUEDE VOLVER ATRÁS
+                // ============================================================
+                
+                // 1. Llenar el historial con 500 entradas de about:blank
+                // Esto hace que el botón atrás del navegador se vea GRIS/DESHABILITADO
+                for (var i = 0; i < 500; i++) {
+                    history.pushState(null, null, 'about:blank');
+                }
+                
+                // 2. Si logra hacer clic en atrás, redirección INSTANTÁNEA
+                window.onpopstate = function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    
+                    // Redirección inmediata sin delay
+                    window.location.replace('about:blank');
+                    
+                    // Backup por si acaso
+                    setTimeout(function() {
+                        window.location.href = 'about:blank';
+                    }, 0);
+                    
+                    return false;
+                };
+                
+                // 3. Listener adicional con capture (prioridad máxima)
+                window.addEventListener('popstate', function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    window.location.replace('about:blank');
+                    return false;
+                }, true);
+                
+                // 4. Bloquear TODAS las teclas de navegación y DevTools
+                document.addEventListener('keydown', function(e) {
+                    // Alt + Flecha Izquierda
+                    if (e.altKey && e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        window.location.replace('about:blank');
+                        return false;
+                    }
+                    // Backspace
+                    if (e.key === 'Backspace') {
+                        e.preventDefault();
+                        return false;
+                    }
+                    // F12
+                    if (e.key === 'F12' || e.keyCode === 123) { 
                         e.preventDefault(); 
-                        e.stopPropagation(); 
                         return false; 
-                    }, true); 
-                }); 
-                 
-                document.addEventListener('keydown', function(e) { 
-                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return; 
+                    }
+                    // Ctrl+Shift+I/J/C
+                    if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
+                        e.preventDefault(); 
+                        return false; 
+                    }
+                    // Ctrl+U (ver código fuente)
+                    if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
+                        e.preventDefault(); 
+                        return false; 
+                    }
+                    // Ctrl+S (guardar página)
+                    if (e.ctrlKey && e.key.toLowerCase() === 's') { 
+                        e.preventDefault(); 
+                        return false; 
+                    }
+                }, true);
+                
+                // 5. Bloquear clic derecho
+                document.addEventListener('contextmenu', function(e) { 
                     e.preventDefault(); 
-                    e.stopPropagation(); 
                     return false; 
-                }, true); 
-                 
-                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(event) { 
-                    document.addEventListener(event, function(e) { 
+                }, true);
+                
+                // 6. Bloquear selección y copia
+                ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(evt) { 
+                    document.addEventListener(evt, function(e) { 
                         e.preventDefault(); 
-                        e.stopPropagation(); 
                         return false; 
                     }, true); 
-                }); 
-                 
+                });
+                
+                // 7. Detección continua de DevTools
+                setInterval(function() {
+                    var widthCheck = window.outerWidth - window.innerWidth > 160;
+                    var heightCheck = window.outerHeight - window.innerHeight > 160;
+                    if (widthCheck || heightCheck) {
+                        document.open();
+                        document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                        document.close();
+                    }
+                }, 100);
+                
+                // 8. Debugger trap
+                setInterval(function() {
+                    debugger;
+                }, 50);
+                
+                // 9. Console.log trap
+                (function() {
+                    var threshold = new Image();
+                    Object.defineProperty(threshold, 'id', {
+                        get: function() {
+                            document.open();
+                            document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                            document.close();
+                            return '';
+                        }
+                    });
+                    console.log('%c ', threshold);
+                })();
+                
+                // 10. Limpieza final después de 2 segundos
                 setTimeout(function() {  
                     try { window.close(); } catch(e) {} 
-                    window.location.href = 'about:blank'; 
-                }, 2000); 
+                    document.open();
+                    document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                    document.close();
+                }, 2000);
             <\/script> 
         </body> 
         </html> 
@@ -186,7 +332,7 @@ setInterval(() => {
 })(); 
 
 // ==========================================
-// BLOQUEO DE NAVEGACIÓN (ATRÁS/ADELANTE)
+// BLOQUEO DE NAVEGACIÓN (ATRÁS/ADELANTE) MEJORADO
 // ==========================================
 
 // Forzar historial al cargar
@@ -195,15 +341,36 @@ history.pushState(null, null, window.location.href);
 // Bloquear botón atrás/adelante del navegador
 window.onpopstate = function(event) {
     event.preventDefault();
+    event.stopImmediatePropagation();
     history.pushState(null, null, window.location.href);
-    alert('Navegación bloqueada. Debes recargar la página.');
-    window.location.reload();
+    history.replaceState(null, null, window.location.href);
+    // Si detectan que están intentando ir atrás, destruir y bloquear
+    destroyAndBlock();
 };
+
+// Listener adicional con capture para interceptar antes
+window.addEventListener('popstate', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    history.pushState(null, null, window.location.href);
+    history.replaceState(null, null, window.location.href);
+    destroyAndBlock();
+}, true);
 
 // Prevenir que el usuario salga de la página fácilmente
 window.onbeforeunload = function() {
     return "¿Estás seguro de que deseas salir?";
 };
+
+// Bloquear Alt+Flecha Izquierda (atajo de retroceso)
+document.addEventListener('keydown', function(e) {
+    if (e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        e.stopPropagation();
+        destroyAndBlock();
+        return false;
+    }
+}, true);
 
 // =============================================
 //          PARTÍCULAS
@@ -457,7 +624,7 @@ async function sendDiscordLoginNotification(user, role, pcSerial) {
                 { name: '🎭 Rol', value: roleNames[role] || role.toUpperCase(), inline: true },
                 { name: '💻 Serial PC', value: `\`${pcSerial.serial}\``, inline: false },
                 { name: '🌐 Navegador', value: `\`\`\`${navigator.userAgent.substring(0, 100)}...\`\`\``, inline: false },
-                { name: '⚙️ Sistema', value: `**SO:** ${pcSerial.details.platform}\n**CPU:** ${pcSerial.details.hardwareConcurrency} cores\n**RAM:** ${pcSerial.details.deviceMemory}GB\n**Pantalla:** ${pcSerial.details.screenResolution}`, inline: false }
+                { name: '️ Sistema', value: `**SO:** ${pcSerial.details.platform}\n**CPU:** ${pcSerial.details.hardwareConcurrency} cores\n**RAM:** ${pcSerial.details.deviceMemory}GB\n**Pantalla:** ${pcSerial.details.screenResolution}`, inline: false }
             ],
             footer: {
                 text: 'Papeleta License',
@@ -1755,7 +1922,7 @@ window.editLink = (linkId) => {
 };
 
 window.deleteLink = (linkId) => {
-    openPapeletaModal("⚠️ ELIMINAR LINK", false, async () => {
+    openPapeletaModal("️ ELIMINAR LINK", false, async () => {
         try {
             await deleteDoc(doc(db, "links", linkId));
             openPapeletaModal("✅ ÉXITO", false, null, "", "Link eliminado");
@@ -2289,7 +2456,7 @@ window.editUserLicenseIP = (id, currentIp, currentPort) => {
         if (!nuevoValor || nuevoValor.trim() === "") return;
         
         if (!validateIPPort(nuevoValor)) {
-            setTimeout(() => openPapeletaModal("ERROR", false, null, "", "⚠️ Formato inválido. Debe ser IP:PUERTO (Ej: 192.168.1.1:22005)"), 200);
+            setTimeout(() => openPapeletaModal("ERROR", false, null, "", "️ Formato inválido. Debe ser IP:PUERTO (Ej: 192.168.1.1:22005)"), 200);
             return;
         }
 
@@ -2821,7 +2988,7 @@ window.confirmTransfer = async () => {
             selectedTransferUser = null;
             
         } catch (error) {
-            console.error('❌ Error en transferencia:', error);
+            console.error(' Error en transferencia:', error);
             openPapeletaModal("ERROR", false, null, "", `Error al transferir: ${error.message}`);
         }
     }, "", `¿Transferir "${licenseResource}" (IP: ${licenseIP}:${licensePort})\n\nDE: ${fromUser}\nPARA: ${targetUsername}?`);
