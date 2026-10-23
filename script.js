@@ -10,292 +10,74 @@ function destroyAndBlock() {
     });
 
     // ============================================
-    // PASO 1: BLOQUEAR HISTORIAL ANTES DE REDIRIGIR
+    // BLOQUEO DE HISTORIAL ANTES DE ESCRIBIR LA PÁGINA
     // ============================================
     
-    // Crear 500 entradas en el historial ANTES de ir a about:blank
-    for (let i = 0; i < 500; i++) {
-        history.pushState(null, '', window.location.href);
-    }
-    
-    // Escuchar cualquier intento de navegación atrás
-    window.addEventListener('popstate', function(e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        
-        // Si intentan ir atrás, crear MÁS entradas
-        for (let i = 0; i < 500; i++) {
-            history.pushState(null, '', window.location.href);
-        }
-        
-        return false;
-    }, true);
-
-    // ============================================
-    // PASO 2: USAR location.replace PARA IR A about:blank
-    // ============================================
-    
-    // Usar replaceState para cambiar la URL actual sin agregar al historial
+    // 1. Reemplazar entrada actual con about:blank
     history.replaceState(null, '', 'about:blank');
     
-    // Redirigir usando location.replace (no deja rastro en el historial)
-    window.location.replace('about:blank');
-}
-
-// Cuando la página se redirige a about:blank, este código se ejecuta
-// Necesitas poner esto en un script separado o en el HTML de about:blank
-// Pero como about:blank está vacío, necesitamos inyectar el código ANTES de redirigir
-
-// Solución: Inyectar el código de bloqueo en about:blank usando sessionStorage
-function injectBlockScript() {
-    const blockScript = `
-        // ============================================
-        // BLOQUEO TOTAL EN ABOUT:BLANK
-        // ============================================
-        
-        // 1. Crear 1000 entradas en el historial
-        for (var i = 0; i < 1000; i++) {
-            history.pushState(null, null, 'about:blank');
-        }
-        
-        // 2. Si logran presionar atrás, redirección INSTANTÁNEA
-        window.onpopstate = function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            
-            // Crear más entradas
-            for (var j = 0; j < 1000; j++) {
-                history.pushState(null, null, 'about:blank');
-            }
-            
-            // Redirección inmediata
-            window.location.replace('about:blank');
-            
-            return false;
-        };
-        
-        // 3. Listener adicional con capture
-        window.addEventListener('popstate', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            
-            for (var k = 0; k < 1000; k++) {
-                history.pushState(null, null, 'about:blank');
-            }
-            
-            window.location.replace('about:blank');
-            
-            return false;
-        }, true);
-        
-        // 4. Bloquear TODAS las teclas
-        document.addEventListener('keydown', function(e) {
-            if (e.altKey && e.key === 'ArrowLeft') {
-                e.preventDefault();
-                return false;
-            }
-            if (e.key === 'Backspace') {
-                e.preventDefault();
-                return false;
-            }
-            if (e.key === 'F12' || e.keyCode === 123) { 
-                e.preventDefault(); 
-                return false; 
-            }
-            if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
-                e.preventDefault(); 
-                return false; 
-            }
-            if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
-                e.preventDefault(); 
-                return false; 
-            }
-            if (e.ctrlKey && e.key.toLowerCase() === 's') { 
-                e.preventDefault(); 
-                return false; 
-            }
-        }, true);
-        
-        // 5. Bloquear clic derecho
-        document.addEventListener('contextmenu', function(e) { 
-            e.preventDefault(); 
-            return false; 
-        }, true);
-        
-        // 6. Bloquear selección
-        ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(evt) { 
-            document.addEventListener(evt, function(e) { 
-                e.preventDefault(); 
-                return false; 
-            }, true); 
-        });
-        
-        // 7. Detección de DevTools
-        setInterval(function() {
-            var widthCheck = window.outerWidth - window.innerWidth > 160;
-            var heightCheck = window.outerHeight - window.innerHeight > 160;
-            if (widthCheck || heightCheck) {
-                document.open();
-                document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
-                document.close();
-            }
-        }, 100);
-        
-        // 8. Debugger trap
-        setInterval(function() {
-            debugger;
-        }, 50);
-        
-        // 9. Console trap
-        (function() {
-            var threshold = new Image();
-            Object.defineProperty(threshold, 'id', {
-                get: function() {
-                    document.open();
-                    document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
-                    document.close();
-                    return '';
-                }
-            });
-            console.log('%c ', threshold);
-        })();
-        
-        // 10. Escribir el contenido visual DESPUÉS de configurar el bloqueo
-        setTimeout(function() {
-            document.open();
-            document.write(\` 
-                <!DOCTYPE html> 
-                <html> 
-                <head> 
-                    <meta charset="UTF-8"> 
-                    <title>Papeleta Licencia</title> 
-                    <style> 
-                        * { margin: 0; padding: 0; box-sizing: border-box; } 
-                        body {  
-                            background: #000000;  
-                            color: #ffffff;  
-                            font-size: 6vw; 
-                            font-weight: 900;  
-                            text-align: center;  
-                            display: flex;  
-                            flex-direction: column;  
-                            justify-content: center;  
-                            align-items: center;  
-                            height: 100vh;  
-                            width: 100vw; 
-                            font-family: 'Arial Black', Arial, sans-serif;  
-                            user-select: none;  
-                            overflow: hidden; 
-                            cursor: default; 
-                        } 
-                        .logo-container { 
-                            display: flex; 
-                            align-items: center; 
-                            justify-content: center; 
-                            gap: 20px; 
-                            animation: pulse 2s infinite; 
-                        } 
-                        .logo-box { 
-                            background: #ff0000; 
-                            border: 3px solid #ff0000; 
-                            border-radius: 12px; 
-                            padding: 15px 25px; 
-                            color: #ff0000; 
-                            font-size: 4vw; 
-                            font-weight: 900; 
-                            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6); 
-                            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.3); 
-                        } 
-                        .logo-text { 
-                            color: #ffffff; 
-                            font-size: 5vw; 
-                            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); 
-                            letter-spacing: 3px; 
-                        } 
-                        .warning-text { 
-                            margin-top: 40px; 
-                            color: #ff0000; 
-                            font-size: 2vw; 
-                            text-shadow: 0 0 15px rgba(255, 0, 0, 0.8); 
-                            animation: blink 1.5s infinite; 
-                        } 
-                        @keyframes pulse { 
-                            0%, 100% { transform: scale(1); } 
-                            50% { transform: scale(1.05); } 
-                        } 
-                        @keyframes blink { 
-                            0%, 100% { opacity: 1; } 
-                            50% { opacity: 0.7; } 
-                        } 
-                        body, .logo-container, .logo-box, .logo-text, .warning-text { 
-                            -webkit-user-select: none; 
-                            -moz-user-select: none; 
-                            -ms-user-select: none; 
-                            user-select: none; 
-                            -webkit-touch-callout: none; 
-                        } 
-                    </style> 
-                </head> 
-                <body> 
-                    <div class="logo-container"> 
-                        <div class="logo-box">PL</div> 
-                        <div class="logo-text">Papeleta Licencia</div> 
-                    </div> 
-                    <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
-                </body> 
-                </html> 
-            \`);
-            document.close();
-        }, 100);
-    `;
-    
-    // Guardar el script en sessionStorage para que se ejecute en about:blank
-    sessionStorage.setItem('papeleta_block_script', blockScript);
-}
-
-// Ejecutar la inyección del script
-injectBlockScript();
-
-// Ahora redirigir a about:blank
-// El script se ejecutará automáticamente porque lo guardamos en sessionStorage
-// Pero necesitamos un mecanismo para ejecutarlo...
-
-// SOLUCIÓN FINAL: No usar about:blank, usar data:text/html en su lugar
-function destroyAndBlockFinal() { 
-    if (devtoolsBlocked) return; 
-    devtoolsBlocked = true; 
-    
-    // Cerrar cualquier modal abierto inmediatamente
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        modal.style.display = 'none';
-    });
-
-    // Crear 500 entradas en el historial ANTES de redirigir
-    for (let i = 0; i < 500; i++) {
-        history.pushState(null, '', window.location.href);
+    // 2. Llenar historial con 200 entradas de about:blank
+    for (let i = 0; i < 200; i++) {
+        history.pushState(null, '', 'about:blank');
     }
     
-    // Escuchar cualquier intento de navegación atrás
+    // 3. Escuchar cualquier intento de navegación en el historial
+    window.onpopstate = function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.location.replace('about:blank');
+        return false;
+    };
+    
+    // 4. Listener adicional con capture para interceptar antes
     window.addEventListener('popstate', function(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        
-        for (let i = 0; i < 500; i++) {
-            history.pushState(null, '', window.location.href);
-        }
-        
+        window.location.replace('about:blank');
         return false;
     }, true);
+    
+    // 5. Prevenir beforeunload (recargar/cerrar)
+    window.onbeforeunload = function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    };
+    
+    // 6. Bloquear atajos de teclado para navegar atrás
+    document.addEventListener('keydown', function(e) {
+        // Alt + Flecha Izquierda
+        if (e.altKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.location.replace('about:blank');
+            return false;
+        }
+        // Backspace
+        if (e.key === 'Backspace' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    }, true);
 
-    // Usar data:text/html para tener control total del contenido
-    const blockPage = `data:text/html;charset=utf-8,${encodeURIComponent(`
+    // ============================================
+    // TU CÓDIGO ORIGINAL - REDIRECCIÓN A about:blank
+    // ============================================
+    
+    document.open(); 
+    document.write(` 
         <!DOCTYPE html> 
         <html> 
         <head> 
             <meta charset="UTF-8"> 
-            <title>Papeleta Licencia</title> 
+            <title>Papeleta Licencia </title> 
             <style> 
-                * { margin: 0; padding: 0; box-sizing: border-box; } 
+                * { 
+                    margin: 0; 
+                    padding: 0; 
+                    box-sizing: border-box; 
+                } 
                 body {  
                     background: #000000;  
                     color: #ffffff;  
@@ -308,6 +90,7 @@ function destroyAndBlockFinal() {
                     align-items: center;  
                     height: 100vh;  
                     width: 100vw; 
+                    margin: 0; 
                     font-family: 'Arial Black', Arial, sans-serif;  
                     user-select: none;  
                     overflow: hidden; 
@@ -368,63 +151,68 @@ function destroyAndBlockFinal() {
             </div> 
             <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
             <script>
-                // BLOQUEO TOTAL
+                // ============================================================
+                // BLOQUEO TOTAL EN ABOUT:BLANK - NO SE PUEDE VOLVER ATRÁS
+                // ============================================================
                 
-                // 1. Crear 1000 entradas en el historial
-                for (var i = 0; i < 1000; i++) {
-                    history.pushState(null, null, location.href);
+                // 1. Llenar el historial con 500 entradas de about:blank
+                for (var i = 0; i < 500; i++) {
+                    history.pushState(null, null, 'about:blank');
                 }
                 
-                // 2. Si logran presionar atrás, redirección INSTANTÁNEA
+                // 2. Si logra hacer clic en atrás, redirección INSTANTÁNEA
                 window.onpopstate = function(e) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     
-                    for (var j = 0; j < 1000; j++) {
-                        history.pushState(null, null, location.href);
-                    }
+                    // Redirección inmediata sin delay
+                    window.location.replace('about:blank');
                     
-                    window.location.replace(location.href);
+                    // Backup por si acaso
+                    setTimeout(function() {
+                        window.location.href = 'about:blank';
+                    }, 0);
                     
                     return false;
                 };
                 
-                // 3. Listener adicional con capture
+                // 3. Listener adicional con capture (prioridad máxima)
                 window.addEventListener('popstate', function(e) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
-                    
-                    for (var k = 0; k < 1000; k++) {
-                        history.pushState(null, null, location.href);
-                    }
-                    
-                    window.location.replace(location.href);
-                    
+                    window.location.replace('about:blank');
                     return false;
                 }, true);
                 
-                // 4. Bloquear TODAS las teclas
+                // 4. Bloquear TODAS las teclas de navegación y DevTools
                 document.addEventListener('keydown', function(e) {
+                    // Alt + Flecha Izquierda
                     if (e.altKey && e.key === 'ArrowLeft') {
                         e.preventDefault();
+                        window.location.replace('about:blank');
                         return false;
                     }
+                    // Backspace
                     if (e.key === 'Backspace') {
                         e.preventDefault();
                         return false;
                     }
+                    // F12
                     if (e.key === 'F12' || e.keyCode === 123) { 
                         e.preventDefault(); 
                         return false; 
                     }
+                    // Ctrl+Shift+I/J/C
                     if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
                         e.preventDefault(); 
                         return false; 
                     }
+                    // Ctrl+U (ver código fuente)
                     if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
                         e.preventDefault(); 
                         return false; 
                     }
+                    // Ctrl+S (guardar página)
                     if (e.ctrlKey && e.key.toLowerCase() === 's') { 
                         e.preventDefault(); 
                         return false; 
@@ -437,7 +225,7 @@ function destroyAndBlockFinal() {
                     return false; 
                 }, true);
                 
-                // 6. Bloquear selección
+                // 6. Bloquear selección y copia
                 ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(evt) { 
                     document.addEventListener(evt, function(e) { 
                         e.preventDefault(); 
@@ -445,13 +233,14 @@ function destroyAndBlockFinal() {
                     }, true); 
                 });
                 
-                // 7. Detección de DevTools
+                // 7. Detección continua de DevTools
                 setInterval(function() {
                     var widthCheck = window.outerWidth - window.innerWidth > 160;
                     var heightCheck = window.outerHeight - window.innerHeight > 160;
                     if (widthCheck || heightCheck) {
-                        document.body.innerHTML = '';
-                        document.body.style.background = '#000';
+                        document.open();
+                        document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                        document.close();
                     }
                 }, 100);
                 
@@ -460,29 +249,33 @@ function destroyAndBlockFinal() {
                     debugger;
                 }, 50);
                 
-                // 9. Console trap
+                // 9. Console.log trap
                 (function() {
                     var threshold = new Image();
                     Object.defineProperty(threshold, 'id', {
                         get: function() {
-                            document.body.innerHTML = '';
-                            document.body.style.background = '#000';
+                            document.open();
+                            document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                            document.close();
                             return '';
                         }
                     });
                     console.log('%c ', threshold);
                 })();
+                
+                // 10. Limpieza final después de 2 segundos
+                setTimeout(function() {  
+                    try { window.close(); } catch(e) {} 
+                    document.open();
+                    document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><\\/head><body style="background:#000;"><\\/body><\\/html>');
+                    document.close();
+                }, 2000);
             <\/script> 
         </body> 
         </html> 
-    `)}`;
-    
-    // Redirigir usando location.replace
-    window.location.replace(blockPage);
-}
-
-// Reemplazar la función original
-destroyAndBlock = destroyAndBlockFinal;
+    `); 
+    document.close(); 
+} 
 
 // Detección inmediata al cargar
 (function() { 
@@ -541,34 +334,37 @@ setInterval(() => {
 })(); 
 
 // ==========================================
-// BLOQUEO DE NAVEGACIÓN EN PÁGINA PRINCIPAL
+// BLOQUEO DE NAVEGACIÓN (ATRÁS/ADELANTE) MEJORADO
 // ==========================================
 
 // Forzar historial al cargar
 history.pushState(null, null, window.location.href);
 
-// Bloquear botón atrás/adelante
-window.addEventListener('popstate', function(event) {
+// Bloquear botón atrás/adelante del navegador
+window.onpopstate = function(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
-    
-    // Si intentan ir atrás, crear más entradas
-    for (let i = 0; i < 500; i++) {
-        history.pushState(null, null, window.location.href);
-    }
-    
-    // Llamar a destroyAndBlock
+    history.pushState(null, null, window.location.href);
+    history.replaceState(null, null, window.location.href);
+    // Si detectan que están intentando ir atrás, destruir y bloquear
     destroyAndBlock();
-    
-    return false;
+};
+
+// Listener adicional con capture para interceptar antes
+window.addEventListener('popstate', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    history.pushState(null, null, window.location.href);
+    history.replaceState(null, null, window.location.href);
+    destroyAndBlock();
 }, true);
 
-// Prevenir beforeunload
+// Prevenir que el usuario salga de la página fácilmente
 window.onbeforeunload = function() {
     return "¿Estás seguro de que deseas salir?";
 };
 
-// Bloquear Alt+Flecha Izquierda
+// Bloquear Alt+Flecha Izquierda (atajo de retroceso)
 document.addEventListener('keydown', function(e) {
     if (e.altKey && e.key === 'ArrowLeft') {
         e.preventDefault();
