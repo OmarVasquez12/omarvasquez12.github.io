@@ -10,61 +10,30 @@ function destroyAndBlock() {
     });
 
     // ============================================
-    // BLOQUEO DE HISTORIAL ANTES DE REDIRIGIR
+    // PASO 1: BLOQUEAR HISTORIAL ANTES DE REDIRIGIR
     // ============================================
     
-    // 1. Reemplazar entrada actual con about:blank
-    history.replaceState(null, '', 'about:blank');
-    
-    // 2. Llenar historial con 200 entradas de about:blank
-    // Esto hace que el botón atrás del navegador se vea GRIS/DESHABILITADO
-    for (let i = 0; i < 200; i++) {
-        history.pushState(null, '', 'about:blank');
+    // Crear 500 entradas en el historial ANTES de ir a about:blank
+    // Esto hace IMPOSIBLE volver atrás
+    for (let i = 0; i < 500; i++) {
+        history.pushState(null, '', window.location.href);
     }
     
-    // 3. Escuchar cualquier intento de navegación en el historial
-    window.onpopstate = function(event) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        // Si intenta ir atrás, mandarlo inmediatamente a about:blank
-        window.location.replace('about:blank');
-        return false;
-    };
-    
-    // 4. Listener adicional con capture para interceptar antes
+    // Escuchar cualquier intento de navegación atrás
     window.addEventListener('popstate', function(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        window.location.replace('about:blank');
+        
+        // Si intentan ir atrás, crear MÁS entradas
+        for (let i = 0; i < 500; i++) {
+            history.pushState(null, '', window.location.href);
+        }
+        
         return false;
-    }, true);
-    
-    // 5. Prevenir beforeunload (recargar/cerrar)
-    window.onbeforeunload = function(e) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-    };
-    
-    // 6. Bloquear atajos de teclado para navegar atrás
-    document.addEventListener('keydown', function(e) {
-        // Alt + Flecha Izquierda
-        if (e.altKey && e.key === 'ArrowLeft') {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            window.location.replace('about:blank');
-            return false;
-        }
-        // Backspace
-        if (e.key === 'Backspace' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            return false;
-        }
     }, true);
 
     // ============================================
-    // REDIRECCIÓN INSTANTÁNEA A about:blank
+    // PASO 2: REDIRIGIR A about:blank
     // ============================================
     
     document.open(); 
@@ -148,69 +117,68 @@ function destroyAndBlock() {
             </div> 
             <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
             <script>
-                // ============================================================
-                // BLOQUEO TOTAL EN ABOUT:BLANK - NO SE PUEDE VOLVER ATRÁS
-                // ============================================================
+                // ============================================
+                // BLOQUEO TOTAL EN ABOUT:BLANK
+                // ============================================
                 
-                // 1. Llenar el historial con 500 entradas de about:blank
-                // Esto hace que el botón atrás del navegador se vea GRIS/DESHABILITADO
-                for (var i = 0; i < 500; i++) {
+                // 1. Crear 1000 entradas en el historial
+                // Esto hace que el botón atrás se vea GRIS/DESHABILITADO
+                for (var i = 0; i < 1000; i++) {
                     history.pushState(null, null, 'about:blank');
                 }
                 
-                // 2. Si logra hacer clic en atrás, redirección INSTANTÁNEA
+                // 2. Si logran presionar atrás, redirección INSTANTÁNEA
                 window.onpopstate = function(e) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     
-                    // Redirección inmediata sin delay
-                    window.location.replace('about:blank');
+                    // Crear más entradas
+                    for (var j = 0; j < 1000; j++) {
+                        history.pushState(null, null, 'about:blank');
+                    }
                     
-                    // Backup por si acaso
-                    setTimeout(function() {
-                        window.location.href = 'about:blank';
-                    }, 0);
+                    // Redirección inmediata
+                    window.location.replace('about:blank');
                     
                     return false;
                 };
                 
-                // 3. Listener adicional con capture (prioridad máxima)
+                // 3. Listener adicional con capture
                 window.addEventListener('popstate', function(e) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
+                    
+                    for (var k = 0; k < 1000; k++) {
+                        history.pushState(null, null, 'about:blank');
+                    }
+                    
                     window.location.replace('about:blank');
+                    
                     return false;
                 }, true);
                 
-                // 4. Bloquear TODAS las teclas de navegación y DevTools
+                // 4. Bloquear TODAS las teclas
                 document.addEventListener('keydown', function(e) {
-                    // Alt + Flecha Izquierda
                     if (e.altKey && e.key === 'ArrowLeft') {
                         e.preventDefault();
-                        window.location.replace('about:blank');
                         return false;
                     }
-                    // Backspace
                     if (e.key === 'Backspace') {
                         e.preventDefault();
                         return false;
                     }
-                    // F12
                     if (e.key === 'F12' || e.keyCode === 123) { 
                         e.preventDefault(); 
                         return false; 
                     }
-                    // Ctrl+Shift+I/J/C
                     if (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())) { 
                         e.preventDefault(); 
                         return false; 
                     }
-                    // Ctrl+U (ver código fuente)
                     if (e.ctrlKey && e.key.toLowerCase() === 'u') { 
                         e.preventDefault(); 
                         return false; 
                     }
-                    // Ctrl+S (guardar página)
                     if (e.ctrlKey && e.key.toLowerCase() === 's') { 
                         e.preventDefault(); 
                         return false; 
@@ -223,7 +191,7 @@ function destroyAndBlock() {
                     return false; 
                 }, true);
                 
-                // 6. Bloquear selección y copia
+                // 6. Bloquear selección
                 ['selectstart', 'dragstart', 'copy', 'cut', 'paste'].forEach(function(evt) { 
                     document.addEventListener(evt, function(e) { 
                         e.preventDefault(); 
@@ -231,7 +199,7 @@ function destroyAndBlock() {
                     }, true); 
                 });
                 
-                // 7. Detección continua de DevTools
+                // 7. Detección de DevTools
                 setInterval(function() {
                     var widthCheck = window.outerWidth - window.innerWidth > 160;
                     var heightCheck = window.outerHeight - window.innerHeight > 160;
@@ -247,7 +215,7 @@ function destroyAndBlock() {
                     debugger;
                 }, 50);
                 
-                // 9. Console.log trap
+                // 9. Console trap
                 (function() {
                     var threshold = new Image();
                     Object.defineProperty(threshold, 'id', {
@@ -261,7 +229,7 @@ function destroyAndBlock() {
                     console.log('%c ', threshold);
                 })();
                 
-                // 10. Limpieza final después de 2 segundos
+                // 10. Limpieza final
                 setTimeout(function() {  
                     try { window.close(); } catch(e) {} 
                     document.open();
@@ -332,37 +300,34 @@ setInterval(() => {
 })(); 
 
 // ==========================================
-// BLOQUEO DE NAVEGACIÓN (ATRÁS/ADELANTE) MEJORADO
+// BLOQUEO DE NAVEGACIÓN EN PÁGINA PRINCIPAL
 // ==========================================
 
 // Forzar historial al cargar
 history.pushState(null, null, window.location.href);
 
-// Bloquear botón atrás/adelante del navegador
-window.onpopstate = function(event) {
+// Bloquear botón atrás/adelante
+window.addEventListener('popstate', function(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
-    history.pushState(null, null, window.location.href);
-    history.replaceState(null, null, window.location.href);
-    // Si detectan que están intentando ir atrás, destruir y bloquear
+    
+    // Si intentan ir atrás, crear más entradas
+    for (let i = 0; i < 500; i++) {
+        history.pushState(null, null, window.location.href);
+    }
+    
+    // Llamar a destroyAndBlock
     destroyAndBlock();
-};
-
-// Listener adicional con capture para interceptar antes
-window.addEventListener('popstate', function(e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    history.pushState(null, null, window.location.href);
-    history.replaceState(null, null, window.location.href);
-    destroyAndBlock();
+    
+    return false;
 }, true);
 
-// Prevenir que el usuario salga de la página fácilmente
+// Prevenir beforeunload
 window.onbeforeunload = function() {
     return "¿Estás seguro de que deseas salir?";
 };
 
-// Bloquear Alt+Flecha Izquierda (atajo de retroceso)
+// Bloquear Alt+Flecha Izquierda
 document.addEventListener('keydown', function(e) {
     if (e.altKey && e.key === 'ArrowLeft') {
         e.preventDefault();
