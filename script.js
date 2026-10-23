@@ -95,16 +95,7 @@ function destroyAndBlock() {
             </div> 
             <div class="warning-text">MIO TE LO QUIERE ROBAR ASI NOOO</div> 
             <script> 
-                // --- BLOQUEO DE NAVEGACIÓN Y SEGURIDAD EXTREMA ---
-
-                // 1. Bloquear botón Atrás/Adelante
-                history.pushState(null, null, location.href);
-                window.onpopstate = function () {
-                    history.go(1);
-                };
-
-                // 2. Bloqueo total de interacción
-                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'keydown', 'keyup'].forEach(function(event) { 
+                ['contextmenu', 'mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function(event) { 
                     document.addEventListener(event, function(e) { 
                         e.preventDefault(); 
                         e.stopPropagation(); 
@@ -112,9 +103,10 @@ function destroyAndBlock() {
                     }, true); 
                 }); 
                  
-                // 3. Anti-Inspección agresivo
                 document.addEventListener('keydown', function(e) { 
+                    if (e.key === 'Tab' || e.key === 'CapsLock' || e.key === 'NumLock') return; 
                     e.preventDefault(); 
+                    e.stopPropagation(); 
                     return false; 
                 }, true); 
                  
@@ -126,19 +118,10 @@ function destroyAndBlock() {
                     }, true); 
                 }); 
                  
-                // 4. Ejecución final segura
                 setTimeout(function() {  
-                    try { 
-                        // Congelar el DOM para que no puedan leerlo fácilmente mientras se cierra
-                        document.documentElement.innerHTML = ""; 
-                        while(true) { 
-                            // Bucle infinito para colgar el hilo de JS si intentan depurar
-                            window.close(); 
-                        }
-                    } catch(e) { 
-                        window.location.href = 'about:blank'; 
-                    } 
-                }, 1500); 
+                    try { window.close(); } catch(e) {} 
+                    window.location.href = 'about:blank'; 
+                }, 2000); 
             <\/script> 
         </body> 
         </html> 
