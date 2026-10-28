@@ -192,18 +192,19 @@ setInterval(() => {
 // Forzar historial al cargar
 history.pushState(null, null, window.location.href);
 
-// Bloquear botón atrás/adelante del navegador
+// Bloquear botón atrás/adelante del navegador (Sin alertas ni recargas para no interrumpir el login de Discord)
 window.onpopstate = function(event) {
     event.preventDefault();
     history.pushState(null, null, window.location.href);
-    alert('Navegación bloqueada. Debes recargar la página.');
-    window.location.reload();
+    // Comentado para evitar interrupciones y permitir fluidez
+    // alert('Navegación bloqueada. Debes recargar la página.');
+    // window.location.reload();
 };
 
-// Prevenir que el usuario salga de la página fácilmente
-window.onbeforeunload = function() {
-    return "¿Estás seguro de que deseas salir?";
-};
+// Prevenir que el usuario salga de la página fácilmente (Comentado para permitir redirección fluida a Discord)
+// window.onbeforeunload = function() {
+//     return "¿Estás seguro de que deseas salir?";
+// };
 
 // =============================================
 //          PARTÍCULAS
@@ -567,6 +568,10 @@ function parseIPPort(ipPort) {
 // ==================== DISCORD OAUTH2 ====================
 
 window.loginWithDiscord = () => {
+    // Desactivar temporalmente las protecciones de navegación para permitir la redirección inmediata a Discord sin alertas
+    window.onbeforeunload = null;
+    window.onpopstate = null;
+    
     const params = {
         client_id: DISCORD_CLIENT_ID,
         redirect_uri: REDIRECT_URI,
