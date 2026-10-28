@@ -2666,19 +2666,40 @@ function renderTransferLicenseList() {
     });
 }
 
-function renderTransferUserList() {
+function renderTransferUserList(filterText = "") {
     const list = document.getElementById("transferUserList");
     if (!list) return;
     list.innerHTML = "";
     
+    // AGREGAR INPUT DE BÚSQUEDA
+    const searchContainer = document.createElement("div");
+    searchContainer.style.cssText = "padding: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem;";
+    searchContainer.innerHTML = `
+        <input type="text" 
+               id="transferUserSearch" 
+               placeholder="🔍 Buscar usuario..." 
+               value="${filterText}"
+               oninput="filterTransferUsers(this.value)"
+               style="width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 0.9rem;">
+    `;
+    list.appendChild(searchContainer);
+    
     if (authorizedUsers.length === 0) {
-        list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No hay usuarios autorizados</div>';
+        list.innerHTML += '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No hay usuarios autorizados</div>';
         return;
     }
     
     let hasUsers = false;
+    const lowerFilter = filterText.toLowerCase();
+    
     authorizedUsers.forEach(user => {
         if (user.id === currentUser.id) return;
+        
+        // FILTRAR USUARIOS POR NOMBRE O ID
+        if (filterText && !user.username.toLowerCase().includes(lowerFilter) && !user.id.includes(filterText)) {
+            return;
+        }
+        
         hasUsers = true;
         
         const item = document.createElement("div");
@@ -2706,9 +2727,14 @@ function renderTransferUserList() {
     });
     
     if (!hasUsers) {
-        list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No hay otros usuarios disponibles</div>';
+        list.innerHTML += '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No se encontraron usuarios</div>';
     }
 }
+
+// FUNCIÓN DE FILTRADO
+window.filterTransferUsers = (filterText) => {
+    renderTransferUserList(filterText);
+};
 
 window.selectTransferLicense = (license) => {
     console.log('🔑 Licencia seleccionada:', license);
