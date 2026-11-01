@@ -12,16 +12,15 @@
     
     <!-- SCRIPT DE PROTECCIÓN BÁSICA ANTI-BOTS -->
     <script>
+        // Ofuscación básica para evitar que bots lean el DOM fácilmente
         document.addEventListener('DOMContentLoaded', () => {
             const body = document.body;
             if (!sessionStorage.getItem('verified')) {
+                // Simulación de verificación (en un entorno real esto se hace con Cloudflare)
                 setTimeout(() => {
                     sessionStorage.setItem('verified', 'true');
                 }, 1000);
             }
-            
-            // Inicializar estado del botón de login al cargar la página
-            checkLoginState();
         });
     </script>
 
@@ -529,8 +528,7 @@
 
         #lockScreen {
             position: fixed; inset: 0; background: var(--bg-body);
-            display: none; /* CAMBIADO: Oculto por defecto para entrada automática */
-            align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             z-index: 9999; overflow: hidden;
         }
         
@@ -894,6 +892,7 @@
             border-color: var(--primary);
         }
 
+        /* Panel de licencias del usuario */
         .user-licenses-panel {
             max-width: 800px;
             margin: 2rem auto;
@@ -1076,6 +1075,7 @@
             border: none; background: transparent;
         }
 
+        /* ESTILOS PARA BOTONES DE DESCARGA */
         .btn-download {
             background: rgba(88,101,242,0.2);
             border: 1px solid var(--discord-blue);
@@ -1143,8 +1143,8 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- Login Screen (OCULTO POR DEFECTO) -->
-<div id="lockScreen" style="display: none;">
+<!-- Login Screen -->
+<div id="lockScreen">
     <div class="login-grid-bg"></div>
     <div class="login-circle"></div>
     <div class="login-circle"></div>
@@ -1230,7 +1230,7 @@
     </div>
 </div>
 
-<!-- NUEVO MODAL: GESTOR DE ACCESOS -->
+<!-- NUEVO MODAL: GESTOR DE ACCESOS (IGUAL QUE USUARIOS AUTORIZADOS) -->
 <div class="modal-overlay" id="accessManagerModal">
     <div class="users-modal-content">
         <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
@@ -1280,7 +1280,7 @@
     </div>
 </div>
 
-<!-- Modal Transferencia -->
+<!-- Modal Transferencia (PASAR A USUARIOS) -->
 <div class="modal-overlay" id="transferModal">
     <div class="edit-options-content" style="max-width:700px;">
         <h3><i class="fa-solid fa-share-from-square"></i> Pasar Licencia a Usuario</h3>
@@ -1360,8 +1360,8 @@
     </div>
 </div>
 
-<!-- Main Content (VISIBLE POR DEFECTO) -->
-<div class="main-wrapper" id="mainWrapper">
+<!-- Main Content -->
+<div class="main-wrapper" id="mainWrapper" style="display:none;">
     <nav class="navbar">
         <div class="container navbar-content">
             <div class="logo">
@@ -1378,10 +1378,9 @@
                     </div>
                 </div>
                 
-                <!-- BOTÓN MODIFICADO: ID añadido para control JS -->
-                <button class="btn-discord-nav" id="btnLoginNav" onclick="showLoginScreen()">
-                    <i class="fa-brands fa-discord"></i><span>ENTRAR CON DISCORD</span>
-                </button>
+                <a href="https://discord.gg/ag6g5pgf8" target="_blank" class="btn-discord-nav" id="btnComunidad">
+                    <i class="fa-brands fa-discord"></i><span>COMUNIDAD</span>
+                </a>
                 
                 <button class="btn-glass" onclick="logoutDiscord()" title="Cerrar Sesión">
                     <i class="fa-solid fa-right-from-bracket"></i> Salir
@@ -1584,59 +1583,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// --- FUNCIONES DE CONTROL DE PANTALLA Y BOTONES ---
-
-// Verifica si hay sesión iniciada para ocultar/mostrar el botón
-function checkLoginState() {
-    const btnLogin = document.getElementById('btnLoginNav');
-    const userInfo = document.getElementById('navUserInfo');
-    const isLoggedIn = localStorage.getItem('discord_token') || localStorage.getItem('user_data');
-
-    if (isLoggedIn) {
-        if(btnLogin) btnLogin.style.display = 'none';
-        if(userInfo) userInfo.style.display = 'flex';
-    } else {
-        if(btnLogin) btnLogin.style.display = 'inline-flex';
-        if(userInfo) userInfo.style.display = 'none';
-    }
-}
-
-// Muestra la pantalla de login cuando se hace clic en "ENTRAR CON DISCORD"
-function showLoginScreen() {
-    const lockScreen = document.getElementById('lockScreen');
-    if (lockScreen) {
-        lockScreen.style.display = 'flex';
-    }
-}
-
-// Simula el acceso exitoso y oculta la pantalla de login
-function loginWithDiscord() {
-    const lockScreen = document.getElementById('lockScreen');
-    const mainWrapper = document.getElementById('mainWrapper');
-    
-    // Guardamos un dato simple para simular sesión (si no usas script.js externo)
-    localStorage.setItem('discord_token', 'simulado'); 
-    
-    // Actualizamos UI
-    if (lockScreen) lockScreen.style.display = 'none';
-    if (mainWrapper) mainWrapper.style.display = 'block';
-    
-    // Ejecutamos la lógica de ocultar botón
-    checkLoginState();
-}
-
-// Función para cerrar sesión y mostrar el botón nuevamente
-function logoutDiscord() {
-    localStorage.removeItem('discord_token');
-    localStorage.removeItem('user_data');
-    
-    // Volver a mostrar el botón
-    checkLoginState();
-    
-    // Opcional: Redirigir o recargar si es necesario
-    // location.reload(); 
-}
 </script>
 </body>
 </html>
