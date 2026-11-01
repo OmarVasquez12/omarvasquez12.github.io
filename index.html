@@ -19,6 +19,9 @@
                     sessionStorage.setItem('verified', 'true');
                 }, 1000);
             }
+            
+            // Inicializar estado del botón de login al cargar la página
+            checkLoginState();
         });
     </script>
 
@@ -1375,8 +1378,8 @@
                     </div>
                 </div>
                 
-                <!-- BOTÓN MODIFICADO: Ahora muestra la pantalla de login -->
-                <button class="btn-discord-nav" id="btnComunidad" onclick="showLoginScreen()">
+                <!-- BOTÓN MODIFICADO: ID añadido para control JS -->
+                <button class="btn-discord-nav" id="btnLoginNav" onclick="showLoginScreen()">
                     <i class="fa-brands fa-discord"></i><span>ENTRAR CON DISCORD</span>
                 </button>
                 
@@ -1582,7 +1585,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// --- FUNCIONES DE CONTROL DE PANTALLA DE LOGIN ---
+// --- FUNCIONES DE CONTROL DE PANTALLA Y BOTONES ---
+
+// Verifica si hay sesión iniciada para ocultar/mostrar el botón
+function checkLoginState() {
+    const btnLogin = document.getElementById('btnLoginNav');
+    const userInfo = document.getElementById('navUserInfo');
+    const isLoggedIn = localStorage.getItem('discord_token') || localStorage.getItem('user_data');
+
+    if (isLoggedIn) {
+        if(btnLogin) btnLogin.style.display = 'none';
+        if(userInfo) userInfo.style.display = 'flex';
+    } else {
+        if(btnLogin) btnLogin.style.display = 'inline-flex';
+        if(userInfo) userInfo.style.display = 'none';
+    }
+}
 
 // Muestra la pantalla de login cuando se hace clic en "ENTRAR CON DISCORD"
 function showLoginScreen() {
@@ -1592,13 +1610,32 @@ function showLoginScreen() {
     }
 }
 
-// Simula el acceso exitoso y oculta la pantalla de login (volver al panel)
-// Nota: Si tu archivo 'script.js' ya define esta función, puedes borrar este bloque.
+// Simula el acceso exitoso y oculta la pantalla de login
 function loginWithDiscord() {
     const lockScreen = document.getElementById('lockScreen');
     const mainWrapper = document.getElementById('mainWrapper');
+    
+    // Guardamos un dato simple para simular sesión (si no usas script.js externo)
+    localStorage.setItem('discord_token', 'simulado'); 
+    
+    // Actualizamos UI
     if (lockScreen) lockScreen.style.display = 'none';
     if (mainWrapper) mainWrapper.style.display = 'block';
+    
+    // Ejecutamos la lógica de ocultar botón
+    checkLoginState();
+}
+
+// Función para cerrar sesión y mostrar el botón nuevamente
+function logoutDiscord() {
+    localStorage.removeItem('discord_token');
+    localStorage.removeItem('user_data');
+    
+    // Volver a mostrar el botón
+    checkLoginState();
+    
+    // Opcional: Redirigir o recargar si es necesario
+    // location.reload(); 
 }
 </script>
 </body>
