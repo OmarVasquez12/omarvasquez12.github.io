@@ -512,138 +512,6 @@
         .add-link-card i { font-size: 3rem; }
         .add-link-card span { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-        #lockScreen {
-            position: fixed; inset: 0; background: var(--bg-body);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 9999; overflow: hidden;
-        }
-        
-        .login-grid-bg {
-            position: absolute; inset: 0;
-            background-image: 
-                linear-gradient(rgba(255,26,26,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,26,26,0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridMove 20s linear infinite; z-index: 0;
-        }
-        @keyframes gridMove {
-            0% { background-position: 0 0; }
-            100% { background-position: 50px 50px; }
-        }
-        
-        .login-circle {
-            position: absolute; border: 2px solid var(--primary);
-            border-radius: 50%; opacity: 0.2;
-            animation: circleExpand 4s infinite ease-out; z-index: 0;
-        }
-        .login-circle:nth-child(2) { width: 200px; height: 200px; animation-delay: 0s; }
-        .login-circle:nth-child(3) { width: 400px; height: 400px; animation-delay: 1s; }
-        .login-circle:nth-child(4) { width: 600px; height: 600px; animation-delay: 2s; }
-        @keyframes circleExpand {
-            0% { transform: scale(0.5); opacity: 0.5; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        
-        #loginBox {
-            background: rgba(20, 10, 10, 0.7); padding: 3.5rem;
-            border-radius: var(--radius-lg); text-align: center;
-            border: 1px solid var(--border-color); backdrop-filter: blur(20px);
-            max-width: 450px; width: 90%; position: relative; z-index: 10;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,26,26,0.15);
-            animation: loginBoxIn 0.6s ease;
-        }
-        @keyframes loginBoxIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .login-logo {
-            width: 90px; height: 90px; margin: 0 auto 1.5rem;
-            border: 3px solid var(--primary); border-radius: 20px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Outfit', sans-serif; font-weight: 900;
-            font-size: 2.5rem; color: var(--primary);
-            box-shadow: 0 0 30px var(--primary-glow); position: relative;
-        }
-        .login-logo::after {
-            content: ''; position: absolute; inset: -8px;
-            border: 2px solid var(--primary); border-radius: 25px;
-            opacity: 0.4; animation: logoPulse 2s infinite;
-        }
-        @keyframes logoPulse {
-            0%, 100% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.15); opacity: 0.7; }
-        }
-        
-        .login-title {
-            font-size: 2rem; font-weight: 900; margin-bottom: 0.25rem;
-            color: var(--text-main); text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .login-subtitle {
-            color: var(--text-muted); font-size: 0.85rem;
-            text-transform: uppercase; letter-spacing: 2px;
-            margin-bottom: 1rem;
-        }
-
-        .login-warning {
-            color: var(--primary); 
-            font-weight: 800; 
-            font-size: 1.1rem; 
-            margin-bottom: 2rem; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            text-shadow: 0 0 15px var(--primary-glow);
-            animation: pulseWarning 2s infinite;
-        }
-        @keyframes pulseWarning {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .btn-discord {
-            background: linear-gradient(135deg, var(--discord-blue), #4752c4);
-            color: white; border: none; padding: 1rem 2rem;
-            border-radius: var(--radius-sm); font-weight: 700; cursor: pointer;
-            font-size: 1rem; display: flex; align-items: center; justify-content: center;
-            gap: 0.75rem; width: 100%; transition: all 0.3s;
-            text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(88,101,242,0.3);
-        }
-        .btn-discord:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(88,101,242,0.5);
-        }
-        .btn-discord i { font-size: 1.3rem; }
-        
-        .user-info {
-            display: flex; align-items: center; gap: 1rem;
-            background: rgba(88,101,242,0.1);
-            border: 1px solid var(--discord-blue);
-            padding: 1rem; border-radius: var(--radius-md);
-            margin-top: 1.5rem;
-        }
-        .user-avatar {
-            width: 50px; height: 50px; border-radius: 50%;
-            border: 2px solid var(--discord-blue);
-        }
-        .user-details { flex: 1; text-align: left; }
-        .user-details .username { color: var(--text-main); font-weight: 700; font-size: 0.95rem; }
-        .user-details .userid { color: var(--text-muted); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }
-        
-        .btn-logout {
-            background: rgba(255,255,255,0.05); color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 0.5rem 1rem; border-radius: var(--radius-sm);
-            font-size: 0.75rem; cursor: pointer;
-            font-weight: 600; text-transform: uppercase;
-            transition: 0.2s;
-        }
-        .btn-logout:hover {
-            background: rgba(255,0,0,0.1);
-            border-color: var(--primary); color: var(--primary);
-        }
-
         .config-panel {
             display: none; background: rgba(255,255,255,0.03);
             padding: 1.25rem; border-radius: var(--radius-md);
@@ -1144,43 +1012,8 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- PANTALLA DE LOGIN (Visible si no está logueado) -->
-<div id="lockScreen">
-    <div class="login-grid-bg"></div>
-    <div class="login-circle"></div>
-    <div class="login-circle"></div>
-    <div class="login-circle"></div>
-    
-    <div id="loginBox">
-        <div class="login-logo">PL</div>
-        <h2 class="login-title">ACCESO RESTRINGIDO</h2>
-        
-        <!-- TEXTO DE ADVERTENCIA CUANDO NO ESTÁ LOGUEADO -->
-        <p class="login-warning">
-            <i class="fa-solid fa-triangle-exclamation"></i> DEBES ENTRAR CON DISCORD
-        </p>
-        
-        <button class="btn-discord" onclick="loginWithDiscord()">
-            <i class="fa-brands fa-discord"></i> ENTRAR CON DISCORD
-        </button>
-        
-        <div id="userInfo" style="display:none;">
-            <div class="user-info">
-                <img id="userAvatar" class="user-avatar" src="" alt="Avatar">
-                <div class="user-details">
-                    <div class="username" id="userName"></div>
-                    <div class="userid" id="userId"></div>
-                </div>
-                <button class="btn-logout" onclick="logoutDiscord()">Salir</button>
-            </div>
-        </div>
-        
-        <p id="loginError" style="color:var(--danger);font-size:0.85rem;margin-top:1rem;"></p>
-    </div>
-</div>
-
-<!-- Main Content (Oculto hasta que se loguee) -->
-<div class="main-wrapper" id="mainWrapper" style="display:none;">
+<!-- Main Content - AHORA VISIBLE POR DEFECTO -->
+<div class="main-wrapper" id="mainWrapper">
     <nav class="navbar">
         <div class="container navbar-content">
             <div class="logo">
@@ -1203,10 +1036,6 @@
                 <button class="btn-primary" id="btnServerLuaNav" onclick="showServerLua()">
                     <i class="fa-solid fa-file-code"></i> Server.lua
                 </button>
-                <div class="user-panel-btn" id="navUserInfo" style="display:none;">
-                    <img id="navUserAvatar" src="" alt="">
-                    <span id="navUserName" style="font-weight:600; font-size:0.9rem;"></span>
-                </div>
             </div>
         </div>
     </nav>
@@ -1239,7 +1068,7 @@
         </section>
 
         <!-- Panel de licencias del usuario (para helpers) -->
-        <div class="user-licenses-panel" id="userLicensesPanel" style="display:none;">
+        <div class="user-licenses-panel" id="userLicensesPanel">
             <h3 style="color:var(--primary); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; text-align:center; justify-content:center;">
                 <i class="fa-solid fa-key"></i> MIS LICENCIAS
             </h3>
@@ -1271,7 +1100,7 @@
                     </button>
                 </div>
                 
-                <div id="btnUserLicensesContainer" style="display:none;">
+                <div id="btnUserLicensesContainer">
                     <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">ASIGNACIONES:</label>
                     <button class="btn-action-small" style="width:100%; background: linear-gradient(135deg, #ff1a1a, #cc1b1b); border-color: var(--primary);" onclick="openUserLicensesPanel()">
                         <i class="fa-solid fa-id-card"></i> Licencias Usuario
@@ -1317,6 +1146,7 @@
                         <div class="input-hint">El puerto es obligatorio y único para cada licencia</div>
                     </div>
                     
+                    <!-- CAMPO GOOGLE DRIVE -->
                     <div class="input-group">
                         <label style="display:flex; align-items:center; gap:0.5rem;">
                             <input type="checkbox" id="enableDriveLink" style="width:auto; accent-color:var(--primary);">
@@ -1427,7 +1257,7 @@
     </div>
 </div>
 
-<!-- NUEVO MODAL: GESTOR DE ACCESOS -->
+<!-- NUEVO MODAL: GESTOR DE ACCESOS (IGUAL QUE USUARIOS AUTORIZADOS) -->
 <div class="modal-overlay" id="accessManagerModal">
     <div class="users-modal-content">
         <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
@@ -1477,7 +1307,7 @@
     </div>
 </div>
 
-<!-- Modal Transferencia -->
+<!-- Modal Transferencia (PASAR A USUARIOS) -->
 <div class="modal-overlay" id="transferModal">
     <div class="edit-options-content" style="max-width:700px;">
         <h3><i class="fa-solid fa-share-from-square"></i> Pasar Licencia a Usuario</h3>
@@ -1512,19 +1342,21 @@
     </div>
 </div>
 
-<!-- MODAL: GESTIÓN DE LICENCIAS DE USUARIO -->
+<!-- NUEVO MODAL: GESTIÓN DE LICENCIAS DE USUARIO -->
 <div class="modal-overlay" id="userLicensesModal">
     <div class="edit-options-content" style="max-width: 900px;">
         <h3><i class="fa-solid fa-users-gear"></i> Gestión de Licencias de Usuario</h3>
         <p>Busca, edita IP, activa/desactiva o elimina licencias asignadas.</p>
         
         <div style="margin-bottom: 1.5rem; position: relative;">
-            <input type="text" id="searchUserLicenseInput" placeholder="🔍 Buscar por Usuario o Recurso..." 
+            <input type="text" id="searchUserLicenseInput" placeholder=" Buscar por Usuario o Recurso..." 
                    style="width:100%; padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white;"
                    onkeyup="filterUserLicenses()">
         </div>
 
-        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;"></div>
+        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;">
+            <!-- Aquí se renderizan las licencias -->
+        </div>
 
         <button class="btn-close-edit" onclick="closeUserLicensesPanel()" style="margin-top:1rem;">✕ Cerrar Panel</button>
     </div>
@@ -1550,6 +1382,7 @@
             <h1><i class="fa-solid fa-link"></i> NUESTROS LINKS</h1>
             <p>Accede a todas nuestras comunidades y redes oficiales</p>
         </div>
+        
         <div class="links-grid" id="linksGrid"></div>
     </div>
 </div>
@@ -1560,6 +1393,7 @@
 
 <script type="module" src="script.js"></script>
 
+<!-- Script para toggle de Google Drive -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const enableDriveCheckbox = document.getElementById('enableDriveLink');
