@@ -10,20 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/disable-devtool@latest"></script>
     
-    <!-- SCRIPT DE PROTECCIÓN BÁSICA ANTI-BOTS -->
-    <script>
-        // Ofuscación básica para evitar que bots lean el DOM fácilmente
-        document.addEventListener('DOMContentLoaded', () => {
-            const body = document.body;
-            if (!sessionStorage.getItem('verified')) {
-                // Simulación de verificación (en un entorno real esto se hace con Cloudflare)
-                setTimeout(() => {
-                    sessionStorage.setItem('verified', 'true');
-                }, 1000);
-            }
-        });
-    </script>
-
     <style>
         :root {
             --bg-body: #050507;
@@ -597,7 +583,22 @@
         .login-subtitle {
             color: var(--text-muted); font-size: 0.85rem;
             text-transform: uppercase; letter-spacing: 2px;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-warning {
+            color: var(--primary); 
+            font-weight: 800; 
+            font-size: 1.1rem; 
+            margin-bottom: 2rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px var(--primary-glow);
+            animation: pulseWarning 2s infinite;
+        }
+        @keyframes pulseWarning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
         
         .btn-discord {
@@ -1143,7 +1144,7 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- Login Screen -->
+<!-- PANTALLA DE LOGIN (Visible si no está logueado) -->
 <div id="lockScreen">
     <div class="login-grid-bg"></div>
     <div class="login-circle"></div>
@@ -1152,11 +1153,15 @@
     
     <div id="loginBox">
         <div class="login-logo">PL</div>
-        <h2 class="login-title">ACCESO AL PANEL</h2>
-        <p class="login-subtitle">PAPELETA LICENCIA</p>
+        <h2 class="login-title">ACCESO RESTRINGIDO</h2>
+        
+        <!-- TEXTO DE ADVERTENCIA CUANDO NO ESTÁ LOGUEADO -->
+        <p class="login-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i> DEBES ENTRAR CON DISCORD
+        </p>
         
         <button class="btn-discord" onclick="loginWithDiscord()">
-            <i class="fa-brands fa-discord"></i> Entrar con Discord
+            <i class="fa-brands fa-discord"></i> ENTRAR CON DISCORD
         </button>
         
         <div id="userInfo" style="display:none;">
@@ -1174,193 +1179,7 @@
     </div>
 </div>
 
-<!-- Modal Principal -->
-<div class="modal-overlay" id="customModal">
-    <div class="modal-content">
-        <h2 id="mTitle">PAPELETA LICENCIA</h2>
-        <p id="mMsg"></p>
-        <input type="text" id="mInput" class="modal-input" style="display:none;">
-        <div class="modal-btns">
-            <button id="mCancel" class="btn-modal secondary" onclick="closePapeletaModal()">Cancelar</button>
-            <button class="btn-modal" onclick="confirmPapeletaModal()">Aceptar</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Carpetas -->
-<div class="modal-overlay" id="folderModal">
-    <div class="folder-modal-content">
-        <h3><i class="fa-solid fa-folder-plus"></i> Nueva Carpeta</h3>
-        <input type="text" id="newFolderName" placeholder="Nombre de la carpeta (Ej: EL CIBAO RP)" maxlength="30">
-        <button class="btn-create-folder" id="btnCreateFolder" onclick="createFolder()">
-            <i class="fa-solid fa-plus"></i> Crear Carpeta
-        </button>
-        <div class="folder-limit-warning" id="folderLimitWarning"></div>
-        <button class="btn-close-edit" onclick="closeFolderModal()" style="margin-top:1rem;">✕ Cerrar</button>
-    </div>
-</div>
-
-<!-- Modal Usuarios -->
-<div class="modal-overlay" id="usersModal">
-    <div class="users-modal-content">
-        <h3><i class="fa-solid fa-users"></i> Usuarios Autorizados</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Solo estos usuarios de Discord pueden acceder al panel</p>
-        
-        <div class="users-list" id="usersList"></div>
-        
-        <div class="add-user-section">
-            <input type="text" id="newUserId" placeholder="ID de Discord (Ej: 123456789012345678)">
-            <button class="btn-search-user" onclick="searchDiscordUser()">
-                <i class="fa-solid fa-magnifying-glass"></i> Buscar Usuario
-            </button>
-            <div id="foundUserName" style="font-size:0.8rem; color:var(--success); margin-bottom:0.5rem; display:none;"></div>
-            
-            <select id="newUserRole">
-                <option value="helper">Papeleta Usuario (Solo ver Hero)</option>
-                <option value="moderator">Moderador (Ver + Gestionar)</option>
-                <option value="admin">Administrador (Acceso Total)</option>
-            </select>
-            
-            <button class="btn-add-user" onclick="addAuthorizedUser()">
-                <i class="fa-solid fa-plus"></i> Agregar Usuario
-            </button>
-        </div>
-        
-        <button class="btn-close-edit" onclick="closeUsersModal()" style="margin-top:1rem;"> Cerrar</button>
-    </div>
-</div>
-
-<!-- NUEVO MODAL: GESTOR DE ACCESOS (IGUAL QUE USUARIOS AUTORIZADOS) -->
-<div class="modal-overlay" id="accessManagerModal">
-    <div class="users-modal-content">
-        <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Historial de personas que han ingresado al sistema</p>
-        
-        <div class="users-list" id="accessList"></div>
-        
-        <button class="btn-close-edit" onclick="closeAccessManager()" style="margin-top:1rem;">
-            <i class="fa-solid fa-xmark"></i> Cerrar
-        </button>
-    </div>
-</div>
-
-<!-- Modal Edición Múltiple -->
-<div class="modal-overlay" id="editOptionsModal">
-    <div class="edit-options-content">
-        <h3><i class="fa-solid fa-sliders"></i> Selecciona Licencias</h3>
-        <p>Marca las licencias que deseas modificar</p>
-        
-        <div class="select-all-row" onclick="toggleSelectAll()">
-            <input type="checkbox" id="selectAllCheckbox">
-            <span>Seleccionar Todas</span>
-        </div>
-        
-        <div class="license-select-list" id="licenseSelectList"></div>
-        
-        <div class="selected-count" id="selectedCount">0 licencias seleccionadas</div>
-        
-        <button class="edit-action-btn" id="btnTransferLicense" onclick="transferSelectedLicense()" disabled style="background: rgba(88,101,242,0.1); border-color: var(--discord-blue); color: var(--discord-blue);">
-            <span><i class="fa-solid fa-share-from-square"></i></span> Transferir a Usuario
-        </button>
-
-        <button class="edit-action-btn" id="btnChangeIP" onclick="applyActionToSelected('ip')" disabled>
-            <span><i class="fa-solid fa-globe"></i></span> Cambiar IP:PUERTO en seleccionadas
-        </button>
-        <button class="edit-action-btn" id="btnChangeUser" onclick="applyActionToSelected('user')" disabled>
-            <span><i class="fa-solid fa-user"></i></span> Cambiar USER en seleccionadas
-        </button>
-        <button class="edit-action-btn" id="btnChangeKey" onclick="applyActionToSelected('key')" disabled>
-            <span><i class="fa-solid fa-key"></i></span> Cambiar KEY en seleccionadas
-        </button>
-        <button class="edit-action-btn danger" id="btnDeleteSelected" onclick="deleteSelectedLicenses()" disabled>
-            <span><i class="fa-solid fa-trash"></i></span> Borrar seleccionadas
-        </button>
-        
-        <button class="btn-close-edit" onclick="closeEditOptionsModal()">✕ Cerrar</button>
-    </div>
-</div>
-
-<!-- Modal Transferencia (PASAR A USUARIOS) -->
-<div class="modal-overlay" id="transferModal">
-    <div class="edit-options-content" style="max-width:700px;">
-        <h3><i class="fa-solid fa-share-from-square"></i> Pasar Licencia a Usuario</h3>
-        <p>Selecciona la licencia y el usuario destino</p>
-        
-        <div style="margin-bottom:1.5rem;">
-            <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase; font-weight:600;">
-                <i class="fa-solid fa-key"></i> Selecciona la Licencia:
-            </label>
-            <div class="license-select-list" id="transferLicenseList" style="max-height:200px;"></div>
-        </div>
-        
-        <div style="margin-bottom:1.5rem;">
-            <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase; font-weight:600;">
-                <i class="fa-solid fa-user"></i> Selecciona el Usuario Destino:
-            </label>
-            <div class="users-list" id="transferUserList" style="max-height:200px;"></div>
-        </div>
-        
-        <div class="transfer-summary" id="transferSummary">
-            <div><strong>Licencia:</strong> <span id="summaryLicense" style="color:var(--primary);"></span></div>
-            <div style="margin-top:0.5rem;"><strong>IP:PUERTO:</strong> <span id="summaryIP" style="color:var(--text-muted);"></span></div>
-            <div style="margin-top:0.5rem;"><strong>Para Usuario:</strong> <span id="summaryUser" style="color:var(--discord-blue);"></span></div>
-        </div>
-        
-        <div class="modal-btns">
-            <button class="btn-modal secondary" onclick="closeTransferModal()">Cancelar</button>
-            <button class="btn-modal" id="btnConfirmTransfer" onclick="window.confirmTransfer()" disabled>
-                <i class="fa-solid fa-check"></i> ACEPTAR TRANSFERENCIA
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- NUEVO MODAL: GESTIÓN DE LICENCIAS DE USUARIO -->
-<div class="modal-overlay" id="userLicensesModal">
-    <div class="edit-options-content" style="max-width: 900px;">
-        <h3><i class="fa-solid fa-users-gear"></i> Gestión de Licencias de Usuario</h3>
-        <p>Busca, edita IP, activa/desactiva o elimina licencias asignadas.</p>
-        
-        <div style="margin-bottom: 1.5rem; position: relative;">
-            <input type="text" id="searchUserLicenseInput" placeholder="🔍 Buscar por Usuario o Recurso..." 
-                   style="width:100%; padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white;"
-                   onkeyup="filterUserLicenses()">
-        </div>
-
-        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;">
-            <!-- Aquí se renderizan las licencias -->
-        </div>
-
-        <button class="btn-close-edit" onclick="closeUserLicensesPanel()" style="margin-top:1rem;">✕ Cerrar Panel</button>
-    </div>
-</div>
-
-<!-- Página de Error 404 -->
-<div id="error404Page" style="display:none; position:fixed; inset:0; background:#000; z-index:999999;">
-    <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; color:#000; font-family:'Courier New', monospace;">
-        <h1 style="font-size:8rem; margin:0; color:#000; text-shadow:0 0 20px rgba(0,0,0,0.5);">404</h1>
-        <p style="font-size:1.5rem; color:#000; margin-top:1rem;">ACCESO DENEGADO</p>
-        <p style="font-size:0.9rem; color:#000; opacity:0.7;">Página no encontrada</p>
-    </div>
-</div>
-
-<!-- Panel de Links -->
-<div id="linksPanel">
-    <button class="links-panel-close" onclick="closeLinksPanel()" title="Cerrar">
-        <i class="fa-solid fa-xmark"></i>
-    </button>
-    
-    <div class="links-panel-container">
-        <div class="links-panel-header">
-            <h1><i class="fa-solid fa-link"></i> NUESTROS LINKS</h1>
-            <p>Accede a todas nuestras comunidades y redes oficiales</p>
-        </div>
-        
-        <div class="links-grid" id="linksGrid"></div>
-    </div>
-</div>
-
-<!-- Main Content -->
+<!-- Main Content (Oculto hasta que se loguee) -->
 <div class="main-wrapper" id="mainWrapper" style="display:none;">
     <nav class="navbar">
         <div class="container navbar-content">
@@ -1377,15 +1196,6 @@
                         <span class="counter-label">Usuarios</span>
                     </div>
                 </div>
-                
-                <!-- BOTÓN CAMBIADO: Ahora funciona para entrar con Discord -->
-                <button class="btn-discord-nav" id="btnComunidad" onclick="loginWithDiscord()">
-                    <i class="fa-brands fa-discord"></i><span>ENTRAR CON DISCORD</span>
-                </button>
-                
-                <button class="btn-glass" onclick="logoutDiscord()" title="Cerrar Sesión">
-                    <i class="fa-solid fa-right-from-bracket"></i> Salir
-                </button>
                 
                 <button class="btn-glass" id="btnConfigNav" onclick="toggleConfig()">
                     <i class="fa-solid fa-gear"></i> Config
@@ -1461,7 +1271,6 @@
                     </button>
                 </div>
                 
-                <!-- NUEVO BOTÓN: LICENCIAS USUARIO -->
                 <div id="btnUserLicensesContainer" style="display:none;">
                     <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">ASIGNACIONES:</label>
                     <button class="btn-action-small" style="width:100%; background: linear-gradient(135deg, #ff1a1a, #cc1b1b); border-color: var(--primary);" onclick="openUserLicensesPanel()">
@@ -1508,7 +1317,6 @@
                         <div class="input-hint">El puerto es obligatorio y único para cada licencia</div>
                     </div>
                     
-                    <!-- CAMPO GOOGLE DRIVE -->
                     <div class="input-group">
                         <label style="display:flex; align-items:center; gap:0.5rem;">
                             <input type="checkbox" id="enableDriveLink" style="width:auto; accent-color:var(--primary);">
@@ -1563,13 +1371,195 @@
     </footer>
 </div>
 
+<!-- Modal Principal -->
+<div class="modal-overlay" id="customModal">
+    <div class="modal-content">
+        <h2 id="mTitle">PAPELETA LICENCIA</h2>
+        <p id="mMsg"></p>
+        <input type="text" id="mInput" class="modal-input" style="display:none;">
+        <div class="modal-btns">
+            <button id="mCancel" class="btn-modal secondary" onclick="closePapeletaModal()">Cancelar</button>
+            <button class="btn-modal" onclick="confirmPapeletaModal()">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Carpetas -->
+<div class="modal-overlay" id="folderModal">
+    <div class="folder-modal-content">
+        <h3><i class="fa-solid fa-folder-plus"></i> Nueva Carpeta</h3>
+        <input type="text" id="newFolderName" placeholder="Nombre de la carpeta (Ej: EL CIBAO RP)" maxlength="30">
+        <button class="btn-create-folder" id="btnCreateFolder" onclick="createFolder()">
+            <i class="fa-solid fa-plus"></i> Crear Carpeta
+        </button>
+        <div class="folder-limit-warning" id="folderLimitWarning"></div>
+        <button class="btn-close-edit" onclick="closeFolderModal()" style="margin-top:1rem;">✕ Cerrar</button>
+    </div>
+</div>
+
+<!-- Modal Usuarios -->
+<div class="modal-overlay" id="usersModal">
+    <div class="users-modal-content">
+        <h3><i class="fa-solid fa-users"></i> Usuarios Autorizados</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Solo estos usuarios de Discord pueden acceder al panel</p>
+        
+        <div class="users-list" id="usersList"></div>
+        
+        <div class="add-user-section">
+            <input type="text" id="newUserId" placeholder="ID de Discord (Ej: 123456789012345678)">
+            <button class="btn-search-user" onclick="searchDiscordUser()">
+                <i class="fa-solid fa-magnifying-glass"></i> Buscar Usuario
+            </button>
+            <div id="foundUserName" style="font-size:0.8rem; color:var(--success); margin-bottom:0.5rem; display:none;"></div>
+            
+            <select id="newUserRole">
+                <option value="helper">Papeleta Usuario (Solo ver Hero)</option>
+                <option value="moderator">Moderador (Ver + Gestionar)</option>
+                <option value="admin">Administrador (Acceso Total)</option>
+            </select>
+            
+            <button class="btn-add-user" onclick="addAuthorizedUser()">
+                <i class="fa-solid fa-plus"></i> Agregar Usuario
+            </button>
+        </div>
+        
+        <button class="btn-close-edit" onclick="closeUsersModal()" style="margin-top:1rem;"> Cerrar</button>
+    </div>
+</div>
+
+<!-- NUEVO MODAL: GESTOR DE ACCESOS -->
+<div class="modal-overlay" id="accessManagerModal">
+    <div class="users-modal-content">
+        <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Historial de personas que han ingresado al sistema</p>
+        
+        <div class="users-list" id="accessList"></div>
+        
+        <button class="btn-close-edit" onclick="closeAccessManager()" style="margin-top:1rem;">
+            <i class="fa-solid fa-xmark"></i> Cerrar
+        </button>
+    </div>
+</div>
+
+<!-- Modal Edición Múltiple -->
+<div class="modal-overlay" id="editOptionsModal">
+    <div class="edit-options-content">
+        <h3><i class="fa-solid fa-sliders"></i> Selecciona Licencias</h3>
+        <p>Marca las licencias que deseas modificar</p>
+        
+        <div class="select-all-row" onclick="toggleSelectAll()">
+            <input type="checkbox" id="selectAllCheckbox">
+            <span>Seleccionar Todas</span>
+        </div>
+        
+        <div class="license-select-list" id="licenseSelectList"></div>
+        
+        <div class="selected-count" id="selectedCount">0 licencias seleccionadas</div>
+        
+        <button class="edit-action-btn" id="btnTransferLicense" onclick="transferSelectedLicense()" disabled style="background: rgba(88,101,242,0.1); border-color: var(--discord-blue); color: var(--discord-blue);">
+            <span><i class="fa-solid fa-share-from-square"></i></span> Transferir a Usuario
+        </button>
+
+        <button class="edit-action-btn" id="btnChangeIP" onclick="applyActionToSelected('ip')" disabled>
+            <span><i class="fa-solid fa-globe"></i></span> Cambiar IP:PUERTO en seleccionadas
+        </button>
+        <button class="edit-action-btn" id="btnChangeUser" onclick="applyActionToSelected('user')" disabled>
+            <span><i class="fa-solid fa-user"></i></span> Cambiar USER en seleccionadas
+        </button>
+        <button class="edit-action-btn" id="btnChangeKey" onclick="applyActionToSelected('key')" disabled>
+            <span><i class="fa-solid fa-key"></i></span> Cambiar KEY en seleccionadas
+        </button>
+        <button class="edit-action-btn danger" id="btnDeleteSelected" onclick="deleteSelectedLicenses()" disabled>
+            <span><i class="fa-solid fa-trash"></i></span> Borrar seleccionadas
+        </button>
+        
+        <button class="btn-close-edit" onclick="closeEditOptionsModal()">✕ Cerrar</button>
+    </div>
+</div>
+
+<!-- Modal Transferencia -->
+<div class="modal-overlay" id="transferModal">
+    <div class="edit-options-content" style="max-width:700px;">
+        <h3><i class="fa-solid fa-share-from-square"></i> Pasar Licencia a Usuario</h3>
+        <p>Selecciona la licencia y el usuario destino</p>
+        
+        <div style="margin-bottom:1.5rem;">
+            <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase; font-weight:600;">
+                <i class="fa-solid fa-key"></i> Selecciona la Licencia:
+            </label>
+            <div class="license-select-list" id="transferLicenseList" style="max-height:200px;"></div>
+        </div>
+        
+        <div style="margin-bottom:1.5rem;">
+            <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase; font-weight:600;">
+                <i class="fa-solid fa-user"></i> Selecciona el Usuario Destino:
+            </label>
+            <div class="users-list" id="transferUserList" style="max-height:200px;"></div>
+        </div>
+        
+        <div class="transfer-summary" id="transferSummary">
+            <div><strong>Licencia:</strong> <span id="summaryLicense" style="color:var(--primary);"></span></div>
+            <div style="margin-top:0.5rem;"><strong>IP:PUERTO:</strong> <span id="summaryIP" style="color:var(--text-muted);"></span></div>
+            <div style="margin-top:0.5rem;"><strong>Para Usuario:</strong> <span id="summaryUser" style="color:var(--discord-blue);"></span></div>
+        </div>
+        
+        <div class="modal-btns">
+            <button class="btn-modal secondary" onclick="closeTransferModal()">Cancelar</button>
+            <button class="btn-modal" id="btnConfirmTransfer" onclick="window.confirmTransfer()" disabled>
+                <i class="fa-solid fa-check"></i> ACEPTAR TRANSFERENCIA
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: GESTIÓN DE LICENCIAS DE USUARIO -->
+<div class="modal-overlay" id="userLicensesModal">
+    <div class="edit-options-content" style="max-width: 900px;">
+        <h3><i class="fa-solid fa-users-gear"></i> Gestión de Licencias de Usuario</h3>
+        <p>Busca, edita IP, activa/desactiva o elimina licencias asignadas.</p>
+        
+        <div style="margin-bottom: 1.5rem; position: relative;">
+            <input type="text" id="searchUserLicenseInput" placeholder="🔍 Buscar por Usuario o Recurso..." 
+                   style="width:100%; padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white;"
+                   onkeyup="filterUserLicenses()">
+        </div>
+
+        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;"></div>
+
+        <button class="btn-close-edit" onclick="closeUserLicensesPanel()" style="margin-top:1rem;">✕ Cerrar Panel</button>
+    </div>
+</div>
+
+<!-- Página de Error 404 -->
+<div id="error404Page" style="display:none; position:fixed; inset:0; background:#000; z-index:999999;">
+    <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; color:#000; font-family:'Courier New', monospace;">
+        <h1 style="font-size:8rem; margin:0; color:#000; text-shadow:0 0 20px rgba(0,0,0,0.5);">404</h1>
+        <p style="font-size:1.5rem; color:#000; margin-top:1rem;">ACCESO DENEGADO</p>
+        <p style="font-size:0.9rem; color:#000; opacity:0.7;">Página no encontrada</p>
+    </div>
+</div>
+
+<!-- Panel de Links -->
+<div id="linksPanel">
+    <button class="links-panel-close" onclick="closeLinksPanel()" title="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    
+    <div class="links-panel-container">
+        <div class="links-panel-header">
+            <h1><i class="fa-solid fa-link"></i> NUESTROS LINKS</h1>
+            <p>Accede a todas nuestras comunidades y redes oficiales</p>
+        </div>
+        <div class="links-grid" id="linksGrid"></div>
+    </div>
+</div>
+
 <div id="encryptContainer">
     <iframe id="encryptFrame" src="" title="Encrypt Panel"></iframe>
 </div>
 
 <script type="module" src="script.js"></script>
 
-<!-- Script para toggle de Google Drive -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const enableDriveCheckbox = document.getElementById('enableDriveLink');
