@@ -524,9 +524,8 @@
         .add-link-card span { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
         #lockScreen {
-            display: none; 
             position: fixed; inset: 0; background: var(--bg-body);
-            align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             z-index: 9999; overflow: hidden;
         }
         
@@ -1122,6 +1121,7 @@
             .hero-title { font-size: 2.5rem; }
             .stats-row { gap: 1.5rem; }
             .stat-num { font-size: 2rem; }
+            .btn-discord-nav span { display: none; }
             .links-panel-header h1 { font-size: 2rem; }
             .user-license-field { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
             .user-license-label { min-width: auto; }
@@ -1138,7 +1138,6 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- Login Screen -->
 <div id="lockScreen">
     <div class="login-grid-bg"></div>
     <div class="login-circle"></div>
@@ -1148,10 +1147,10 @@
     <div id="loginBox">
         <div class="login-logo">PL</div>
         <h2 class="login-title">ACCESO AL PANEL</h2>
-        <p class="login-subtitle">LICENCIA DE PAPELETA</p>
+        <p class="login-subtitle">PAPELETA LICENCIA</p>
         
         <button class="btn-discord" onclick="loginWithDiscord()">
-            <i class="fa-brands fa-discord"></i> ENTRAR CON DISCORD
+            <i class="fa-brands fa-discord"></i> Entrar con Discord
         </button>
         
         <div id="userInfo" style="display:none;">
@@ -1169,7 +1168,6 @@
     </div>
 </div>
 
-<!-- Modal Principal -->
 <div class="modal-overlay" id="customModal">
     <div class="modal-content">
         <h2 id="mTitle">PAPELETA LICENCIA</h2>
@@ -1182,7 +1180,6 @@
     </div>
 </div>
 
-<!-- Modal Carpetas -->
 <div class="modal-overlay" id="folderModal">
     <div class="folder-modal-content">
         <h3><i class="fa-solid fa-folder-plus"></i> Nueva Carpeta</h3>
@@ -1195,7 +1192,6 @@
     </div>
 </div>
 
-<!-- Modal Usuarios -->
 <div class="modal-overlay" id="usersModal">
     <div class="users-modal-content">
         <h3><i class="fa-solid fa-users"></i> Usuarios Autorizados</h3>
@@ -1225,7 +1221,19 @@
     </div>
 </div>
 
-<!-- Modal Edición Múltiple -->
+<div class="modal-overlay" id="accessManagerModal">
+    <div class="users-modal-content">
+        <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Historial de personas que han ingresado al sistema</p>
+        
+        <div class="users-list" id="accessList"></div>
+        
+        <button class="btn-close-edit" onclick="closeAccessManager()" style="margin-top:1rem;">
+            <i class="fa-solid fa-xmark"></i> Cerrar
+        </button>
+    </div>
+</div>
+
 <div class="modal-overlay" id="editOptionsModal">
     <div class="edit-options-content">
         <h3><i class="fa-solid fa-sliders"></i> Selecciona Licencias</h3>
@@ -1261,7 +1269,6 @@
     </div>
 </div>
 
-<!-- Modal Transferencia -->
 <div class="modal-overlay" id="transferModal">
     <div class="edit-options-content" style="max-width:700px;">
         <h3><i class="fa-solid fa-share-from-square"></i> Pasar Licencia a Usuario</h3>
@@ -1296,7 +1303,6 @@
     </div>
 </div>
 
-<!-- NUEVO MODAL: GESTIÓN DE LICENCIAS DE USUARIO -->
 <div class="modal-overlay" id="userLicensesModal">
     <div class="edit-options-content" style="max-width: 900px;">
         <h3><i class="fa-solid fa-users-gear"></i> Gestión de Licencias de Usuario</h3>
@@ -1308,13 +1314,13 @@
                    onkeyup="filterUserLicenses()">
         </div>
 
-        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;"></div>
+        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;">
+        </div>
 
         <button class="btn-close-edit" onclick="closeUserLicensesPanel()" style="margin-top:1rem;">✕ Cerrar Panel</button>
     </div>
 </div>
 
-<!-- Página de Error 404 -->
 <div id="error404Page" style="display:none; position:fixed; inset:0; background:#000; z-index:999999;">
     <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; color:#000; font-family:'Courier New', monospace;">
         <h1 style="font-size:8rem; margin:0; color:#000; text-shadow:0 0 20px rgba(0,0,0,0.5);">404</h1>
@@ -1323,7 +1329,6 @@
     </div>
 </div>
 
-<!-- Panel de Links -->
 <div id="linksPanel">
     <button class="links-panel-close" onclick="closeLinksPanel()" title="Cerrar">
         <i class="fa-solid fa-xmark"></i>
@@ -1339,8 +1344,7 @@
     </div>
 </div>
 
-<!-- Main Content -->
-<div class="main-wrapper" id="mainWrapper" style="display:block;">
+<div class="main-wrapper" id="mainWrapper" style="display:none;">
     <nav class="navbar">
         <div class="container navbar-content">
             <div class="logo">
@@ -1357,8 +1361,8 @@
                     </div>
                 </div>
                 
-                <a href="#" class="btn-discord-nav" id="btnComunidad" onclick="openLoginModal()">
-                    <i class="fa-brands fa-discord"></i><span>Sercion con discord</span>
+                <a href="https://discord.gg/ag6g5pgf8" target="_blank" class="btn-discord-nav" id="btnComunidad">
+                    <i class="fa-brands fa-discord"></i><span>COMUNIDAD</span>
                 </a>
                 
                 <button class="btn-glass" onclick="logoutDiscord()" title="Cerrar Sesión">
@@ -1406,24 +1410,11 @@
             </div>
         </section>
 
-        <!-- Panel de licencias del usuario -->
-        <div class="user-licenses-panel" id="userLicensesPanel">
+        <div class="user-licenses-panel" id="userLicensesPanel" style="display:none;">
             <h3 style="color:var(--primary); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; text-align:center; justify-content:center;">
                 <i class="fa-solid fa-key"></i> MIS LICENCIAS
             </h3>
-            
-            <!-- MENSAJE INICIAL ANTES DE LOGIN -->
-            <div id="loginRequiredMessage" class="user-no-licenses">
-                <i class="fa-solid fa-lock"></i>
-                <h3>Acceso Restringido</h3>
-                <p>Tienes que iniciar sesión con Discord para ver tus licencias y tu rol asignado.</p>
-            </div>
-
-            <!-- CONTENIDO DE LICENCIAS (OCULTO POR DEFECTO) -->
-            <div id="userLicensesContent" style="display:none;">
-                <div id="userRoleBadge" style="text-align:center; margin-bottom:1rem;"></div>
-                <div id="userLicensesList"></div>
-            </div>
+            <div id="userLicensesList"></div>
         </div>
 
         <div class="config-panel" id="configPanel" style="max-width:800px; margin:0 auto 2rem;">
@@ -1436,6 +1427,12 @@
                     <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">GESTIÓN DE ACCESO:</label>
                     <button class="btn-action-small" style="width:100%; background:var(--discord-blue); border-color:var(--discord-blue);" onclick="openUsersModal()">
                         <i class="fa-solid fa-users"></i> Usuarios Autorizados
+                    </button>
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">PERSONAS AUTORIZADAS:</label>
+                    <button class="btn-action-small" style="width:100%; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); border-color: var(--primary);" onclick="openAccessManager()">
+                        <i class="fa-solid fa-user-shield"></i> Personas Autorizadas
                     </button>
                 </div>
                 <div>
@@ -1565,139 +1562,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-function openLoginModal() {
-    const lockScreen = document.getElementById('lockScreen');
-    if (lockScreen) {
-        lockScreen.style.display = 'flex';
-    }
-}
-
-// SIMULACIÓN DE LOGIN EXITOSO
-function simulateSuccessfulLogin(userData) {
-    const loginMsg = document.getElementById('loginRequiredMessage');
-    if (loginMsg) loginMsg.style.display = 'none';
-    
-    document.getElementById('userLicensesContent').style.display = 'block';
-    
-    const roleBadge = document.getElementById('userRoleBadge');
-    let badgeClass = 'badge-none';
-    let roleName = 'Usuario';
-    
-    if (userData.role === 'admin') { badgeClass = 'badge-admin'; roleName = 'ADMINISTRADOR'; } 
-    else if (userData.role === 'moderator') { badgeClass = 'badge-mod'; roleName = 'MODERADOR'; } 
-    else if (userData.role === 'helper') { badgeClass = 'badge-helper'; roleName = 'HELPER'; }
-    
-    roleBadge.innerHTML = `<span class="user-item-badge ${badgeClass}">${roleName}</span>`;
-    
-    // Cargar licencias (pasamos el array de licencias del usuario)
-    loadUserLicenses(userData);
-}
-
-// FUNCIÓN PARA CARGAR LICENCIAS DEL USUARIO (CON VALIDACIÓN DE SOPORTE)
-function loadUserLicenses(userData) {
-    const licensesList = document.getElementById('userLicensesList');
-    
-    // Aquí se evalúan las licencias del usuario. 
-    // Si viene vacío o no existe, muestra el mensaje de soporte.
-    const licenses = userData.licenses || [];
-
-    if (licenses.length === 0) {
-        licensesList.innerHTML = `
-            <div class="user-no-licenses">
-                <i class="fa-solid fa-headset" style="color: var(--primary); opacity: 1; font-size: 3.5rem; margin-bottom: 1rem;"></i>
-                <h3 style="color: var(--text-main); font-size: 1.4rem;">Sin Licencias Activas</h3>
-                <p style="color: var(--text-muted); font-size: 1rem; max-width: 400px; margin: 0 auto;">
-                    No tienes ninguna licencia asignada a tu usuario en este momento.
-                </p>
-                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 26, 26, 0.1); border: 1px solid var(--primary); border-radius: var(--radius-md); display: inline-block;">
-                    <p style="color: var(--primary); font-weight: 700; font-size: 1rem; margin: 0;">
-                        <i class="fa-brands fa-discord"></i> Habla con soporte para adquirir o activar tu licencia.
-                    </p>
-                </div>
-            </div>
-        `;
-        return;
-    }
-
-    let html = '';
-    licenses.forEach((license, index) => {
-        html += `
-        <div class="user-license-card">
-            <div class="user-license-header">
-                <div class="user-license-title">
-                    <i class="fa-solid fa-cube"></i> ${license.resource}
-                </div>
-                <div class="user-license-status ${license.status}">
-                    ${license.status === 'active' ? 'ACTIVA' : 'INACTIVA'}
-                </div>
-            </div>
-            
-            <div class="user-license-field">
-                <div class="user-license-label">IP:PUERTO</div>
-                <div class="user-license-value">${license.ip}</div>
-            </div>
-            
-            <div class="user-license-field">
-                <div class="user-license-label">USUARIO</div>
-                <div class="user-license-value">${userData.username || 'Usuario'}</div>
-            </div>
-            
-            <div class="user-license-code">
-                <button class="btn-copy-code" onclick="copyLicenseCode(this, '${index}')">
-                    <i class="fa-solid fa-copy"></i> Copiar
-                </button>
-                <pre id="licenseCode${index}">${license.code}</pre>
-            </div>
-        </div>
-        `;
-    });
-    
-    licensesList.innerHTML = html;
-}
-
-function copyLicenseCode(btn, index) {
-    const codeElement = document.getElementById(`licenseCode${index}`);
-    const text = codeElement.textContent;
-    
-    navigator.clipboard.writeText(text).then(() => {
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Copiado!';
-        btn.classList.add('copied');
-        
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.classList.remove('copied');
-        }, 2000);
-    });
-}
-
-/* 
-EJEMPLO DE USO AL CONECTAR CON TU BACKEND:
-
-// Para un usuario SIN licencias (mostrará el mensaje de soporte):
-simulateSuccessfulLogin({
-    username: 'JugadorNuevo',
-    role: 'helper',
-    userId: '987654321',
-    licenses: [] 
-});
-
-// Para un usuario CON licencias (mostrará las tarjetas):
-simulateSuccessfulLogin({
-    username: 'AdminServer',
-    role: 'admin',
-    userId: '123456789',
-    licenses: [
-        {
-            resource: 'OMARMUSICA',
-            ip: '45.126.209.194:22204',
-            status: 'active',
-            code: '-- Código de licencia OMARMUSICA\nreturn {\n  key = "ABC123XYZ",\n  ip = "45.126.209.194:22204"\n}'
-        }
-    ]
-});
-*/
 </script>
 </body>
 </html>
