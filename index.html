@@ -1126,7 +1126,7 @@
             .hero-title { font-size: 2.5rem; }
             .stats-row { gap: 1.5rem; }
             .stat-num { font-size: 2rem; }
-            .btn-discord-nav span { display: none; }
+            /* MODIFICADO: Se eliminó 'display: none' para que el texto sea visible siempre */
             .links-panel-header h1 { font-size: 2rem; }
             .user-license-field { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
             .user-license-label { min-width: auto; }
@@ -1378,8 +1378,9 @@
                     </div>
                 </div>
                 
+                <!-- MODIFICADO: Texto cambiado a "Sercion con discord" -->
                 <a href="https://discord.gg/ag6g5pgf8" target="_blank" class="btn-discord-nav" id="btnComunidad">
-                    <i class="fa-brands fa-discord"></i><span>COMUNIDAD</span>
+                    <i class="fa-brands fa-discord"></i><span>Sercion con discord</span>
                 </a>
                 
                 <button class="btn-glass" onclick="logoutDiscord()" title="Cerrar Sesión">
