@@ -523,7 +523,6 @@
         .add-link-card i { font-size: 3rem; }
         .add-link-card span { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* MODIFICADO: Ocultamos la pantalla de login por defecto */
         #lockScreen {
             display: none; 
             position: fixed; inset: 0; background: var(--bg-body);
@@ -891,7 +890,6 @@
             border-color: var(--primary);
         }
 
-        /* Panel de licencias del usuario */
         .user-licenses-panel {
             max-width: 800px;
             margin: 2rem auto;
@@ -1074,7 +1072,6 @@
             border: none; background: transparent;
         }
 
-        /* ESTILOS PARA BOTONES DE DESCARGA */
         .btn-download {
             background: rgba(88,101,242,0.2);
             border: 1px solid var(--discord-blue);
@@ -1141,7 +1138,7 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- Login Screen (Ahora oculto por defecto) -->
+<!-- Login Screen -->
 <div id="lockScreen">
     <div class="login-grid-bg"></div>
     <div class="login-circle"></div>
@@ -1228,20 +1225,6 @@
     </div>
 </div>
 
-<!-- NUEVO MODAL: GESTOR DE ACCESOS (IGUAL QUE USUARIOS AUTORIZADOS) -->
-<div class="modal-overlay" id="accessManagerModal">
-    <div class="users-modal-content">
-        <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Historial de personas que han ingresado al sistema</p>
-        
-        <div class="users-list" id="accessList"></div>
-        
-        <button class="btn-close-edit" onclick="closeAccessManager()" style="margin-top:1rem;">
-            <i class="fa-solid fa-xmark"></i> Cerrar
-        </button>
-    </div>
-</div>
-
 <!-- Modal Edición Múltiple -->
 <div class="modal-overlay" id="editOptionsModal">
     <div class="edit-options-content">
@@ -1278,7 +1261,7 @@
     </div>
 </div>
 
-<!-- Modal Transferencia (PASAR A USUARIOS) -->
+<!-- Modal Transferencia -->
 <div class="modal-overlay" id="transferModal">
     <div class="edit-options-content" style="max-width:700px;">
         <h3><i class="fa-solid fa-share-from-square"></i> Pasar Licencia a Usuario</h3>
@@ -1325,9 +1308,7 @@
                    onkeyup="filterUserLicenses()">
         </div>
 
-        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;">
-            <!-- Aquí se renderizan las licencias -->
-        </div>
+        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;"></div>
 
         <button class="btn-close-edit" onclick="closeUserLicensesPanel()" style="margin-top:1rem;">✕ Cerrar Panel</button>
     </div>
@@ -1358,7 +1339,7 @@
     </div>
 </div>
 
-<!-- Main Content (Ahora visible por defecto) -->
+<!-- Main Content -->
 <div class="main-wrapper" id="mainWrapper" style="display:block;">
     <nav class="navbar">
         <div class="container navbar-content">
@@ -1376,7 +1357,6 @@
                     </div>
                 </div>
                 
-                <!-- MODIFICADO: Ahora llama a openLoginModal() -->
                 <a href="#" class="btn-discord-nav" id="btnComunidad" onclick="openLoginModal()">
                     <i class="fa-brands fa-discord"></i><span>Sercion con discord</span>
                 </a>
@@ -1426,13 +1406,13 @@
             </div>
         </section>
 
-        <!-- Panel de licencias del usuario (para helpers) -->
+        <!-- Panel de licencias del usuario -->
         <div class="user-licenses-panel" id="userLicensesPanel">
             <h3 style="color:var(--primary); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; text-align:center; justify-content:center;">
                 <i class="fa-solid fa-key"></i> MIS LICENCIAS
             </h3>
             
-            <!-- MENSAJE INICIAL ANTES DE LOGIN (BOTÓN ELIMINADO) -->
+            <!-- MENSAJE INICIAL ANTES DE LOGIN -->
             <div id="loginRequiredMessage" class="user-no-licenses">
                 <i class="fa-solid fa-lock"></i>
                 <h3>Acceso Restringido</h3>
@@ -1441,9 +1421,7 @@
 
             <!-- CONTENIDO DE LICENCIAS (OCULTO POR DEFECTO) -->
             <div id="userLicensesContent" style="display:none;">
-                <div id="userRoleBadge" style="text-align:center; margin-bottom:1rem;">
-                    <!-- Aquí aparecerá el badge del rol -->
-                </div>
+                <div id="userRoleBadge" style="text-align:center; margin-bottom:1rem;"></div>
                 <div id="userLicensesList"></div>
             </div>
         </div>
@@ -1461,19 +1439,12 @@
                     </button>
                 </div>
                 <div>
-                    <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">PERSONAS AUTORIZADAS:</label>
-                    <button class="btn-action-small" style="width:100%; background: linear-gradient(135deg, #ff6b6b, #ff1a1a); border-color: var(--primary);" onclick="openAccessManager()">
-                        <i class="fa-solid fa-user-shield"></i> Personas Autorizadas
-                    </button>
-                </div>
-                <div>
                     <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">TRANSFERENCIAS:</label>
                     <button class="btn-action-small" style="width:100%; background:linear-gradient(135deg, #5865F2, #4752c4); border-color:var(--discord-blue);" onclick="openTransferModal()">
                         <i class="fa-solid fa-share-from-square"></i> Pasar a Usuarios
                     </button>
                 </div>
                 
-                <!-- NUEVO BOTÓN: LICENCIAS USUARIO -->
                 <div id="btnUserLicensesContainer" style="display:none;">
                     <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">ASIGNACIONES:</label>
                     <button class="btn-action-small" style="width:100%; background: linear-gradient(135deg, #ff1a1a, #cc1b1b); border-color: var(--primary);" onclick="openUserLicensesPanel()">
@@ -1520,7 +1491,6 @@
                         <div class="input-hint">El puerto es obligatorio y único para cada licencia</div>
                     </div>
                     
-                    <!-- CAMPO GOOGLE DRIVE -->
                     <div class="input-group">
                         <label style="display:flex; align-items:center; gap:0.5rem;">
                             <input type="checkbox" id="enableDriveLink" style="width:auto; accent-color:var(--primary);">
@@ -1581,7 +1551,6 @@
 
 <script type="module" src="script.js"></script>
 
-<!-- Script para toggle de Google Drive -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const enableDriveCheckbox = document.getElementById('enableDriveLink');
@@ -1597,7 +1566,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// FUNCIÓN PARA MOSTRAR LA PANTALLA DE LOGIN AL HACER CLIC EN EL BOTÓN
 function openLoginModal() {
     const lockScreen = document.getElementById('lockScreen');
     if (lockScreen) {
@@ -1605,61 +1573,55 @@ function openLoginModal() {
     }
 }
 
-// SIMULACIÓN DE LOGIN EXITOSO (Esto debería conectarse con tu backend real)
+// SIMULACIÓN DE LOGIN EXITOSO
 function simulateSuccessfulLogin(userData) {
-    // Ocultar mensaje de login requerido
     const loginMsg = document.getElementById('loginRequiredMessage');
-    if (loginMsg) {
-        loginMsg.style.display = 'none';
-    }
+    if (loginMsg) loginMsg.style.display = 'none';
     
-    // Mostrar contenido de licencias
     document.getElementById('userLicensesContent').style.display = 'block';
     
-    // Mostrar badge de rol
     const roleBadge = document.getElementById('userRoleBadge');
     let badgeClass = 'badge-none';
     let roleName = 'Usuario';
     
-    if (userData.role === 'admin') {
-        badgeClass = 'badge-admin';
-        roleName = 'ADMINISTRADOR';
-    } else if (userData.role === 'moderator') {
-        badgeClass = 'badge-mod';
-        roleName = 'MODERADOR';
-    } else if (userData.role === 'helper') {
-        badgeClass = 'badge-helper';
-        roleName = 'HELPER';
-    }
+    if (userData.role === 'admin') { badgeClass = 'badge-admin'; roleName = 'ADMINISTRADOR'; } 
+    else if (userData.role === 'moderator') { badgeClass = 'badge-mod'; roleName = 'MODERADOR'; } 
+    else if (userData.role === 'helper') { badgeClass = 'badge-helper'; roleName = 'HELPER'; }
     
     roleBadge.innerHTML = `<span class="user-item-badge ${badgeClass}">${roleName}</span>`;
     
-    // Simular carga de licencias del usuario
+    // Cargar licencias (pasamos el array de licencias del usuario)
     loadUserLicenses(userData);
 }
 
-// FUNCIÓN PARA CARGAR LICENCIAS DEL USUARIO (Simulación)
+// FUNCIÓN PARA CARGAR LICENCIAS DEL USUARIO (CON VALIDACIÓN DE SOPORTE)
 function loadUserLicenses(userData) {
     const licensesList = document.getElementById('userLicensesList');
     
-    // Datos de ejemplo - en producción vendrían del backend
-    const sampleLicenses = [
-        {
-            resource: 'OMARMUSICA',
-            ip: '45.126.209.194:22204',
-            status: 'active',
-            code: '-- Código de licencia OMARMUSICA\nreturn {\n  key = "ABC123XYZ",\n  ip = "45.126.209.194:22204"\n}'
-        },
-        {
-            resource: 'SISTEMA_FACCIONES',
-            ip: '45.126.209.194:22205',
-            status: 'inactive',
-            code: '-- Código de licencia SISTEMA_FACCIONES\nreturn {\n  key = "DEF456UVW",\n  ip = "45.126.209.194:22205"\n}'
-        }
-    ];
-    
+    // Aquí se evalúan las licencias del usuario. 
+    // Si viene vacío o no existe, muestra el mensaje de soporte.
+    const licenses = userData.licenses || [];
+
+    if (licenses.length === 0) {
+        licensesList.innerHTML = `
+            <div class="user-no-licenses">
+                <i class="fa-solid fa-headset" style="color: var(--primary); opacity: 1; font-size: 3.5rem; margin-bottom: 1rem;"></i>
+                <h3 style="color: var(--text-main); font-size: 1.4rem;">Sin Licencias Activas</h3>
+                <p style="color: var(--text-muted); font-size: 1rem; max-width: 400px; margin: 0 auto;">
+                    No tienes ninguna licencia asignada a tu usuario en este momento.
+                </p>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 26, 26, 0.1); border: 1px solid var(--primary); border-radius: var(--radius-md); display: inline-block;">
+                    <p style="color: var(--primary); font-weight: 700; font-size: 1rem; margin: 0;">
+                        <i class="fa-brands fa-discord"></i> Habla con soporte para adquirir o activar tu licencia.
+                    </p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
     let html = '';
-    sampleLicenses.forEach((license, index) => {
+    licenses.forEach((license, index) => {
         html += `
         <div class="user-license-card">
             <div class="user-license-header">
@@ -1694,7 +1656,6 @@ function loadUserLicenses(userData) {
     licensesList.innerHTML = html;
 }
 
-// FUNCIÓN PARA COPIAR CÓDIGO DE LICENCIA
 function copyLicenseCode(btn, index) {
     const codeElement = document.getElementById(`licenseCode${index}`);
     const text = codeElement.textContent;
@@ -1711,19 +1672,31 @@ function copyLicenseCode(btn, index) {
     });
 }
 
-// MODIFICAR LA FUNCIÓN loginWithDiscord() PARA LLAMAR A simulateSuccessfulLogin
-// Nota: Esta función debe estar en tu script.js original, pero aquí está la versión modificada
-/*
-function loginWithDiscord() {
-    // ... tu lógica actual de login ...
-    
-    // Después del login exitoso, llamar a:
-    simulateSuccessfulLogin({
-        username: 'papeletascript1',
-        role: 'admin', // o 'moderator', 'helper' según corresponda
-        userId: '123456789'
-    });
-}
+/* 
+EJEMPLO DE USO AL CONECTAR CON TU BACKEND:
+
+// Para un usuario SIN licencias (mostrará el mensaje de soporte):
+simulateSuccessfulLogin({
+    username: 'JugadorNuevo',
+    role: 'helper',
+    userId: '987654321',
+    licenses: [] 
+});
+
+// Para un usuario CON licencias (mostrará las tarjetas):
+simulateSuccessfulLogin({
+    username: 'AdminServer',
+    role: 'admin',
+    userId: '123456789',
+    licenses: [
+        {
+            resource: 'OMARMUSICA',
+            ip: '45.126.209.194:22204',
+            status: 'active',
+            code: '-- Código de licencia OMARMUSICA\nreturn {\n  key = "ABC123XYZ",\n  ip = "45.126.209.194:22204"\n}'
+        }
+    ]
+});
 */
 </script>
 </body>
