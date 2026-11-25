@@ -10,13 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/disable-devtool@latest"></script>
     
-    <!-- SCRIPT DE PROTECCIÓN BÁSICA ANTI-BOTS -->
     <script>
-        // Ofuscación básica para evitar que bots lean el DOM fácilmente
         document.addEventListener('DOMContentLoaded', () => {
             const body = document.body;
             if (!sessionStorage.getItem('verified')) {
-                // Simulación de verificación (en un entorno real esto se hace con Cloudflare)
                 setTimeout(() => {
                     sessionStorage.setItem('verified', 'true');
                 }, 1000);
@@ -526,9 +523,11 @@
         .add-link-card i { font-size: 3rem; }
         .add-link-card span { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
+        /* MODIFICADO: Ocultamos la pantalla de login por defecto */
         #lockScreen {
+            display: none; 
             position: fixed; inset: 0; background: var(--bg-body);
-            display: flex; align-items: center; justify-content: center;
+            align-items: center; justify-content: center;
             z-index: 9999; overflow: hidden;
         }
         
@@ -1126,7 +1125,6 @@
             .hero-title { font-size: 2.5rem; }
             .stats-row { gap: 1.5rem; }
             .stat-num { font-size: 2rem; }
-            /* MODIFICADO: Se eliminó 'display: none' para que el texto sea visible siempre */
             .links-panel-header h1 { font-size: 2rem; }
             .user-license-field { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
             .user-license-label { min-width: auto; }
@@ -1143,7 +1141,7 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- Login Screen -->
+<!-- Login Screen (Ahora oculto por defecto) -->
 <div id="lockScreen">
     <div class="login-grid-bg"></div>
     <div class="login-circle"></div>
@@ -1153,10 +1151,10 @@
     <div id="loginBox">
         <div class="login-logo">PL</div>
         <h2 class="login-title">ACCESO AL PANEL</h2>
-        <p class="login-subtitle">PAPELETA LICENCIA</p>
+        <p class="login-subtitle">LICENCIA DE PAPELETA</p>
         
         <button class="btn-discord" onclick="loginWithDiscord()">
-            <i class="fa-brands fa-discord"></i> Entrar con Discord
+            <i class="fa-brands fa-discord"></i> ENTRAR CON DISCORD
         </button>
         
         <div id="userInfo" style="display:none;">
@@ -1360,8 +1358,8 @@
     </div>
 </div>
 
-<!-- Main Content -->
-<div class="main-wrapper" id="mainWrapper" style="display:none;">
+<!-- Main Content (Ahora visible por defecto) -->
+<div class="main-wrapper" id="mainWrapper" style="display:block;">
     <nav class="navbar">
         <div class="container navbar-content">
             <div class="logo">
@@ -1378,8 +1376,8 @@
                     </div>
                 </div>
                 
-                <!-- MODIFICADO: Texto cambiado a "Sercion con discord" -->
-                <a href="https://discord.gg/ag6g5pgf8" target="_blank" class="btn-discord-nav" id="btnComunidad">
+                <!-- MODIFICADO: Ahora llama a openLoginModal() -->
+                <a href="#" class="btn-discord-nav" id="btnComunidad" onclick="openLoginModal()">
                     <i class="fa-brands fa-discord"></i><span>Sercion con discord</span>
                 </a>
                 
@@ -1429,11 +1427,28 @@
         </section>
 
         <!-- Panel de licencias del usuario (para helpers) -->
-        <div class="user-licenses-panel" id="userLicensesPanel" style="display:none;">
+        <div class="user-licenses-panel" id="userLicensesPanel">
             <h3 style="color:var(--primary); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; text-align:center; justify-content:center;">
                 <i class="fa-solid fa-key"></i> MIS LICENCIAS
             </h3>
-            <div id="userLicensesList"></div>
+            
+            <!-- MENSAJE INICIAL ANTES DE LOGIN -->
+            <div id="loginRequiredMessage" class="user-no-licenses">
+                <i class="fa-solid fa-lock"></i>
+                <h3>Acceso Restringido</h3>
+                <p>Tienes que iniciar sesión con Discord para ver tus licencias y tu rol asignado.</p>
+                <button class="btn-primary" style="margin-top:1rem;" onclick="openLoginModal()">
+                    <i class="fa-brands fa-discord"></i> Iniciar Sesión
+                </button>
+            </div>
+
+            <!-- CONTENIDO DE LICENCIAS (OCULTO POR DEFECTO) -->
+            <div id="userLicensesContent" style="display:none;">
+                <div id="userRoleBadge" style="text-align:center; margin-bottom:1rem;">
+                    <!-- Aquí aparecerá el badge del rol -->
+                </div>
+                <div id="userLicensesList"></div>
+            </div>
         </div>
 
         <div class="config-panel" id="configPanel" style="max-width:800px; margin:0 auto 2rem;">
@@ -1584,6 +1599,132 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// FUNCIÓN PARA MOSTRAR LA PANTALLA DE LOGIN AL HACER CLIC EN EL BOTÓN
+function openLoginModal() {
+    const lockScreen = document.getElementById('lockScreen');
+    if (lockScreen) {
+        lockScreen.style.display = 'flex';
+    }
+}
+
+// SIMULACIÓN DE LOGIN EXITOSO (Esto debería conectarse con tu backend real)
+function simulateSuccessfulLogin(userData) {
+    // Ocultar mensaje de login requerido
+    document.getElementById('loginRequiredMessage').style.display = 'none';
+    
+    // Mostrar contenido de licencias
+    document.getElementById('userLicensesContent').style.display = 'block';
+    
+    // Mostrar badge de rol
+    const roleBadge = document.getElementById('userRoleBadge');
+    let badgeClass = 'badge-none';
+    let roleName = 'Usuario';
+    
+    if (userData.role === 'admin') {
+        badgeClass = 'badge-admin';
+        roleName = 'ADMINISTRADOR';
+    } else if (userData.role === 'moderator') {
+        badgeClass = 'badge-mod';
+        roleName = 'MODERADOR';
+    } else if (userData.role === 'helper') {
+        badgeClass = 'badge-helper';
+        roleName = 'HELPER';
+    }
+    
+    roleBadge.innerHTML = `<span class="user-item-badge ${badgeClass}">${roleName}</span>`;
+    
+    // Simular carga de licencias del usuario
+    loadUserLicenses(userData);
+}
+
+// FUNCIÓN PARA CARGAR LICENCIAS DEL USUARIO (Simulación)
+function loadUserLicenses(userData) {
+    const licensesList = document.getElementById('userLicensesList');
+    
+    // Datos de ejemplo - en producción vendrían del backend
+    const sampleLicenses = [
+        {
+            resource: 'OMARMUSICA',
+            ip: '45.126.209.194:22204',
+            status: 'active',
+            code: '-- Código de licencia OMARMUSICA\nreturn {\n  key = "ABC123XYZ",\n  ip = "45.126.209.194:22204"\n}'
+        },
+        {
+            resource: 'SISTEMA_FACCIONES',
+            ip: '45.126.209.194:22205',
+            status: 'inactive',
+            code: '-- Código de licencia SISTEMA_FACCIONES\nreturn {\n  key = "DEF456UVW",\n  ip = "45.126.209.194:22205"\n}'
+        }
+    ];
+    
+    let html = '';
+    sampleLicenses.forEach((license, index) => {
+        html += `
+        <div class="user-license-card">
+            <div class="user-license-header">
+                <div class="user-license-title">
+                    <i class="fa-solid fa-cube"></i> ${license.resource}
+                </div>
+                <div class="user-license-status ${license.status}">
+                    ${license.status === 'active' ? 'ACTIVA' : 'INACTIVA'}
+                </div>
+            </div>
+            
+            <div class="user-license-field">
+                <div class="user-license-label">IP:PUERTO</div>
+                <div class="user-license-value">${license.ip}</div>
+            </div>
+            
+            <div class="user-license-field">
+                <div class="user-license-label">USUARIO</div>
+                <div class="user-license-value">${userData.username || 'Usuario'}</div>
+            </div>
+            
+            <div class="user-license-code">
+                <button class="btn-copy-code" onclick="copyLicenseCode(this, '${index}')">
+                    <i class="fa-solid fa-copy"></i> Copiar
+                </button>
+                <pre id="licenseCode${index}">${license.code}</pre>
+            </div>
+        </div>
+        `;
+    });
+    
+    licensesList.innerHTML = html;
+}
+
+// FUNCIÓN PARA COPIAR CÓDIGO DE LICENCIA
+function copyLicenseCode(btn, index) {
+    const codeElement = document.getElementById(`licenseCode${index}`);
+    const text = codeElement.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Copiado!';
+        btn.classList.add('copied');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
+
+// MODIFICAR LA FUNCIÓN loginWithDiscord() PARA LLAMAR A simulateSuccessfulLogin
+// Nota: Esta función debe estar en tu script.js original, pero aquí está la versión modificada
+/*
+function loginWithDiscord() {
+    // ... tu lógica actual de login ...
+    
+    // Después del login exitoso, llamar a:
+    simulateSuccessfulLogin({
+        username: 'papeletascript1',
+        role: 'admin', // o 'moderator', 'helper' según corresponda
+        userId: '123456789'
+    });
+}
+*/
 </script>
 </body>
 </html>
