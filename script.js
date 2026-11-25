@@ -196,7 +196,15 @@ history.pushState(null, null, window.location.href);
 window.onpopstate = function(event) {
     event.preventDefault();
     history.pushState(null, null, window.location.href);
+    // Comentado para evitar interrupciones y permitir fluidez
+    // alert('Navegación bloqueada. Debes recargar la página.');
+    // window.location.reload();
 };
+
+// Prevenir que el usuario salga de la página fácilmente (Comentado para permitir redirección fluida a Discord)
+// window.onbeforeunload = function() {
+//     return "¿Estás seguro de que deseas salir?";
+// };
 
 // =============================================
 //          PARTÍCULAS
@@ -581,17 +589,6 @@ window.logoutDiscord = () => {
     window.location.reload();
 };
 
-// NUEVA FUNCIÓN: Manejo inteligente del botón Comunidad
-window.handleCommunityClick = () => {
-    if (sessionStorage.getItem('papeleta_discord_token') || currentUser) {
-        // Si hay sesión, va al discord real
-        window.open("https://discord.gg/ag6g5pgf8", "_blank");
-    } else {
-        // Si no hay sesión, inicia el proceso de login
-        loginWithDiscord();
-    }
-};
-
 async function handleDiscordCallback() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
@@ -603,6 +600,7 @@ async function handleDiscordCallback() {
         try { await fetchDiscordUser(accessToken); }
         catch (error) {
             console.error('Error:', error);
+            document.getElementById("loginError").innerText = "Error al conectar con Discord";
             sessionStorage.removeItem('papeleta_discord_token');
         }
     } else {
@@ -676,9 +674,11 @@ function renderAccessList() {
         
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
+            // Agregamos TODOS los usuarios (activos y tumbados) para poder mostrarlos y gestionarlos
             usersArray.push(data);
         });
 
+        // ORDENAR ALFABÉTICAMENTE (DE LA A A LA Z) POR NOMBRE DE USUARIO
         usersArray.sort((a, b) => {
             const nameA = (a.username || "").toLowerCase();
             const nameB = (b.username || "").toLowerCase();
@@ -687,6 +687,7 @@ function renderAccessList() {
             return 0;
         });
 
+        // Renderizamos la lista ya ordenada
         usersArray.forEach(data => {
             const item = document.createElement("div");
             item.className = "user-item";
@@ -694,6 +695,7 @@ function renderAccessList() {
             const safeUsername = (data.username || 'Desconocido').replace(/'/g, "\\'");
             
             if (data.revoked === true) {
+                // USUARIO TUMBADO: Mostrar botón verde de "Desetumbar"
                 item.innerHTML = `
                     <img src="${data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="border:2px solid var(--danger); opacity: 0.6;">
                     <div class="user-item-info">
@@ -706,6 +708,7 @@ function renderAccessList() {
                     </button>
                 `;
             } else {
+                // USUARIO ACTIVO: Mostrar botón rojo de "Tumbar Acceso"
                 item.innerHTML = `
                     <img src="${data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="border:2px solid var(--primary);">
                     <div class="user-item-info">
@@ -733,7 +736,10 @@ window.revokeAccess = async (userId, username) => {
     openPapeletaModal("⚠️ CONFIRMAR", false, async () => {
         try {
             await updateDoc(doc(db, "accesos", userId), { revoked: true, revokedAt: new Date().toISOString() });
+            
+            // Guardar marca permanente en el navegador del usuario
             localStorage.setItem('papeleta_banned_' + userId, 'true');
+            
             try { await deleteDoc(doc(db, "usuarios", userId)); } catch (e) { console.log("Usuario no estaba en autorizados"); }
             updateLog(`✅ Acceso revocado para ${username}`);
             renderAccessList();
@@ -753,14 +759,20 @@ window.revokeAccess = async (userId, username) => {
     }, "", `¿Revocar acceso a "${username}"?\n\nAl aceptar, esta persona verá una página de error 404 al intentar entrar.`);
 };
 
+// NUEVA FUNCIÓN: Desetumbar (Restaurar acceso)
 window.restoreAccess = async (userId, username) => {
     openPapeletaModal("✅ RESTAURAR ACCESO", false, async () => {
         try {
+            // 1. Quitar el estado de revocado en Firebase
             await updateDoc(doc(db, "accesos", userId), { revoked: false });
+            
+            // 2. Eliminar la marca de bloqueo del localStorage (para que pueda volver a entrar)
             localStorage.removeItem('papeleta_banned_' + userId);
+            
             updateLog(`✅ Acceso restaurado para ${username}`);
             renderAccessList();
             
+            // Notificar por Discord
             try {
                 const embed = {
                     title: '✅ ACCESO RESTAURADO', color: 0x00ff44,
@@ -772,6 +784,7 @@ window.restoreAccess = async (userId, username) => {
                 };
                 await fetch(DISCORD_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ embeds: [embed] }) });
             } catch (e) { console.error("Error enviando webhook:", e); }
+            
         } catch (error) { openPapeletaModal("ERROR", false, null, "", `Error: ${error.message}`); }
     }, "", `¿Restaurar acceso a "${username}"?\n\nEsta persona podrá volver a entrar normalmente.`);
 };
@@ -781,17 +794,27 @@ function show404Page() {
         localStorage.setItem('papeleta_banned_' + currentUser.id, 'true');
     }
     
+    // Ocultar el login y el panel principal para que no estorben
     const lockScreen = document.getElementById("lockScreen");
     const mainWrapper = document.getElementById("mainWrapper");
     if(lockScreen) lockScreen.style.display = "none";
     if(mainWrapper) mainWrapper.style.display = "none";
 
+    // Crear el contenedor de error 404 con fondo BLANCO
     const errorContainer = document.createElement("div");
     errorContainer.id = "custom404Overlay";
     errorContainer.style.cssText = `
-        position: fixed; inset: 0; background: #ffffff; color: #000000;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        z-index: 999999; font-family: 'Arial', sans-serif; text-align: center;
+        position: fixed;
+        inset: 0;
+        background: #ffffff; /* FONDO BLANCO */
+        color: #000000;      /* TEXTO NEGRO */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 999999;
+        font-family: 'Arial', sans-serif;
+        text-align: center;
     `;
 
     errorContainer.innerHTML = `
@@ -803,6 +826,7 @@ function show404Page() {
         <div style="margin-top: 40px; width: 100px; height: 4px; background: #ff0000;"></div>
     `;
 
+    // Limpiar el body y añadir solo este overlay
     document.body.innerHTML = '';
     document.body.appendChild(errorContainer);
     document.body.style.overflow = "hidden";
@@ -813,11 +837,13 @@ function show404Page() {
 async function checkRevokedAccess(userId) {
     if (!userId) return false;
     
+    // 1. Verificar primero la marca local permanente
     if (localStorage.getItem('papeleta_banned_' + userId) === 'true') {
         show404Page();
         return true;
     }
     
+    // 2. Verificar en Firebase
     try {
         const accessRef = doc(db, "accesos", userId);
         const accessSnap = await getDoc(accessRef);
@@ -852,6 +878,7 @@ async function checkUserAuthorization(user, pcSerial = null) {
         }, 100);
     });
     
+    // Verificar si el acceso fue revocado
     const isRevoked = await checkRevokedAccess(user.id);
     if (isRevoked) return;
     
@@ -872,31 +899,34 @@ async function checkUserAuthorization(user, pcSerial = null) {
         userData = { id: user.id, role: 'helper', username: user.username, avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : '' };
     }
 
+    // Rastrear el acceso
     if (pcSerial) {
         await trackUserAccess(user, pcSerial);
         await sendDiscordLoginNotification(user, role, pcSerial);
     }
     
+    // Incrementar contador de accesos
     await incrementAccessCount(user.id);
 
-    // VIGILANTE DE EXPULSIÓN INMEDIATA
+    // ==========================================
+    // NUEVO: VIGILANTE DE EXPULSIÓN INMEDIATA
+    // ==========================================
+    // Escucha cambios en la base de datos en tiempo real para este usuario específico
     const myAccessRef = doc(db, "accesos", user.id);
     onSnapshot(myAccessRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
+            // Si el admin marcó 'revoked: true', expulsar inmediatamente
             if (data.revoked === true) {
                 console.log("Acceso revocado en tiempo real. Expulsando...");
                 show404Page();
             }
         }
     });
+    // ==========================================
 
-    // Mostrar panel principal (ya no hay lockScreen)
-    const mainWrapper = document.getElementById("mainWrapper");
-    if (mainWrapper) {
-        mainWrapper.style.display = "block";
-    }
-
+    document.getElementById("lockScreen").style.display = "none";
+    document.getElementById("mainWrapper").style.display = "block";
     document.getElementById("userInfo").style.display = "block";
     document.getElementById("navUserInfo").style.display = "flex";
     document.querySelector(".btn-discord").style.display = "none";
@@ -971,9 +1001,6 @@ async function checkUserAuthorization(user, pcSerial = null) {
         if(asidePanel) asidePanel.style.display = '';
         if(tableCard) tableCard.style.display = '';
     }
-    
-    // Verificar estado de sesión para el panel de licencias
-    checkSessionAndRenderLicenses();
 }
 
 async function addAuthorizedUserToFirebase(user, forcedRole = null) {
@@ -2126,7 +2153,6 @@ function updateGlobalUserCount() {
 document.addEventListener('DOMContentLoaded', async () => {
     initParticles();
     await handleDiscordCallback();
-    checkSessionAndRenderLicenses(); // Verificar sesión al cargar
 });
 
 window.copyText = (id) => {
@@ -2286,14 +2312,17 @@ window.editUserLicenseIP = (id, currentIp, currentPort) => {
     }, `${currentIp}:${currentPort}`, "Nueva IP:PUERTO:");
 };
 
+// === NUEVA FUNCIÓN: Edición Inline del Link de Drive ===
 window.editUserLicenseDriveLink = (id, currentDriveLink, btnElement) => {
     const driveRow = btnElement.parentElement;
     
+    // Verificar si ya hay un input abierto
     if (driveRow.querySelector('.drive-link-input')) {
         renderUserLicensesManagementList(document.getElementById("searchUserLicenseInput").value);
         return;
     }
 
+    // Reemplazar con input inline
     driveRow.innerHTML = `
         <span style="font-size:0.75rem; color:var(--text-muted); width:70px;">GOOGLE DRIVE</span>
         <input type="text" class="drive-link-input"
@@ -2312,6 +2341,7 @@ window.editUserLicenseDriveLink = (id, currentDriveLink, btnElement) => {
         </button>
     `;
     
+    // Auto-focus el input
     setTimeout(() => {
         const input = driveRow.querySelector('.drive-link-input');
         if (input) input.focus();
@@ -2421,12 +2451,15 @@ configLicense = {
     ["Key"] = "${keyValue}"
 }`;
         
+        // Botón de descarga: activo si tiene enlace, deshabilitado si no
         let downloadBtn = '';
         if (driveLinkValue && driveLinkValue.trim() !== '' && driveLinkValue.includes('drive.google.com')) {
+            // TIENE ENLACE - Botón activo
             downloadBtn = `<button class="btn-download" onclick="window.open('${driveLinkValue}', '_blank')" title="Descargar recurso" style="margin-right:0.75rem;">
                 <i class="fa-solid fa-download"></i>
             </button>`;
         } else {
+            // NO TIENE ENLACE - Botón deshabilitado que muestra mensaje
             downloadBtn = `<button class="btn-download-disabled" onclick="openPapeletaModal('INFO', false, null, '', 'ESTA LICENCIA NO TIENE ENLACE DE DESCARGA')" title="Sin enlace de descarga" style="margin-right:0.75rem;">
                 <i class="fa-solid fa-download"></i>
             </button>`;
@@ -2638,6 +2671,7 @@ function renderTransferUserList(filterText = "") {
     if (!list) return;
     list.innerHTML = "";
     
+    // AGREGAR INPUT DE BÚSQUEDA
     const searchContainer = document.createElement("div");
     searchContainer.style.cssText = "padding: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem;";
     searchContainer.innerHTML = `
@@ -2661,6 +2695,7 @@ function renderTransferUserList(filterText = "") {
     authorizedUsers.forEach(user => {
         if (user.id === currentUser.id) return;
         
+        // FILTRAR USUARIOS POR NOMBRE O ID
         if (filterText && !user.username.toLowerCase().includes(lowerFilter) && !user.id.includes(filterText)) {
             return;
         }
@@ -2696,6 +2731,7 @@ function renderTransferUserList(filterText = "") {
     }
 }
 
+// FUNCIÓN DE FILTRADO
 window.filterTransferUsers = (filterText) => {
     renderTransferUserList(filterText);
 };
@@ -2821,32 +2857,3 @@ window.confirmTransfer = async () => {
         }
     }, "", `¿Transferir "${licenseResource}" (IP: ${licenseIP}:${licensePort})\n\nDE: ${fromUser}\nPARA: ${targetUsername}?`);
 };
-
-// =============================================
-//          CONTROL DE SESIÓN Y BLOQUEO DE LICENCIAS
-// =============================================
-
-function checkSessionAndRenderLicenses() {
-    const overlay = document.getElementById("licenseLockOverlay");
-    const panel = document.getElementById("userLicensesPanel");
-    
-    // Verificamos si existe token en sessionStorage o si currentUser está definido
-    const hasSession = sessionStorage.getItem('papeleta_discord_token') || currentUser;
-
-    if (!hasSession) {
-        // SI NO HAY SESIÓN:
-        if (panel) panel.style.display = "block"; // Mostramos el panel contenedor
-        if (overlay) overlay.style.display = "flex"; // Mostramos el candado encima
-    } else {
-        // SI HAY SESIÓN:
-        if (overlay) overlay.style.display = "none"; // Ocultamos el candado
-        
-        // Si el usuario es helper, renderizamos sus licencias normal
-        if (currentUser) {
-            const userData = authorizedUsers.find(u => u.id === currentUser.id);
-            if (userData && userData.role === 'helper') {
-                renderUserLicenses();
-            }
-        }
-    }
-}
