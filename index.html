@@ -1432,14 +1432,11 @@
                 <i class="fa-solid fa-key"></i> MIS LICENCIAS
             </h3>
             
-            <!-- MENSAJE INICIAL ANTES DE LOGIN -->
+            <!-- MENSAJE INICIAL ANTES DE LOGIN (BOTÓN ELIMINADO) -->
             <div id="loginRequiredMessage" class="user-no-licenses">
                 <i class="fa-solid fa-lock"></i>
                 <h3>Acceso Restringido</h3>
                 <p>Tienes que iniciar sesión con Discord para ver tus licencias y tu rol asignado.</p>
-                <button class="btn-primary" style="margin-top:1rem;" onclick="openLoginModal()">
-                    <i class="fa-brands fa-discord"></i> Iniciar Sesión
-                </button>
             </div>
 
             <!-- CONTENIDO DE LICENCIAS (OCULTO POR DEFECTO) -->
@@ -1611,7 +1608,10 @@ function openLoginModal() {
 // SIMULACIÓN DE LOGIN EXITOSO (Esto debería conectarse con tu backend real)
 function simulateSuccessfulLogin(userData) {
     // Ocultar mensaje de login requerido
-    document.getElementById('loginRequiredMessage').style.display = 'none';
+    const loginMsg = document.getElementById('loginRequiredMessage');
+    if (loginMsg) {
+        loginMsg.style.display = 'none';
+    }
     
     // Mostrar contenido de licencias
     document.getElementById('userLicensesContent').style.display = 'block';
