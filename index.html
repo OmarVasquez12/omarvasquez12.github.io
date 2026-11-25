@@ -12,6 +12,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
             if (!sessionStorage.getItem('verified')) {
                 setTimeout(() => {
                     sessionStorage.setItem('verified', 'true');
@@ -522,6 +523,7 @@
         .add-link-card i { font-size: 3rem; }
         .add-link-card span { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 
+        /* MODIFICADO: Ocultamos la pantalla de login por defecto */
         #lockScreen {
             display: none; 
             position: fixed; inset: 0; background: var(--bg-body);
@@ -611,32 +613,6 @@
             box-shadow: 0 10px 30px rgba(88,101,242,0.5);
         }
         .btn-discord i { font-size: 1.3rem; }
-        
-        /* NUEVO: Botón de iniciar sesión con estilo Discord (azul, ya no rojo) */
-        .btn-discord-login {
-            background: linear-gradient(135deg, #5865F2, #4752c4);
-            color: white;
-            border: none;
-            padding: 1rem 2.5rem;
-            border-radius: var(--radius-sm);
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(88,101,242,0.3);
-            margin-top: 1rem;
-        }
-        .btn-discord-login:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(88,101,242,0.5);
-            background: linear-gradient(135deg, #6a75f5, #5865F2);
-        }
-        .btn-discord-login i { font-size: 1.3rem; }
         
         .user-info {
             display: flex; align-items: center; gap: 1rem;
@@ -1098,6 +1074,7 @@
             border: none; background: transparent;
         }
 
+        /* ESTILOS PARA BOTONES DE DESCARGA */
         .btn-download {
             background: rgba(88,101,242,0.2);
             border: 1px solid var(--discord-blue);
@@ -1164,7 +1141,7 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- Login Screen (oculto, solo aparece al hacer clic en "Sercion con discord") -->
+<!-- Login Screen (Ahora oculto por defecto) -->
 <div id="lockScreen">
     <div class="login-grid-bg"></div>
     <div class="login-circle"></div>
@@ -1251,7 +1228,7 @@
     </div>
 </div>
 
-<!-- Modal Gestor de Accesos -->
+<!-- NUEVO MODAL: GESTOR DE ACCESOS (IGUAL QUE USUARIOS AUTORIZADOS) -->
 <div class="modal-overlay" id="accessManagerModal">
     <div class="users-modal-content">
         <h3><i class="fa-solid fa-user-shield"></i> Personas Autorizadas</h3>
@@ -1301,7 +1278,7 @@
     </div>
 </div>
 
-<!-- Modal Transferencia -->
+<!-- Modal Transferencia (PASAR A USUARIOS) -->
 <div class="modal-overlay" id="transferModal">
     <div class="edit-options-content" style="max-width:700px;">
         <h3><i class="fa-solid fa-share-from-square"></i> Pasar Licencia a Usuario</h3>
@@ -1336,7 +1313,7 @@
     </div>
 </div>
 
-<!-- Modal Gestión de Licencias de Usuario -->
+<!-- NUEVO MODAL: GESTIÓN DE LICENCIAS DE USUARIO -->
 <div class="modal-overlay" id="userLicensesModal">
     <div class="edit-options-content" style="max-width: 900px;">
         <h3><i class="fa-solid fa-users-gear"></i> Gestión de Licencias de Usuario</h3>
@@ -1348,7 +1325,9 @@
                    onkeyup="filterUserLicenses()">
         </div>
 
-        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;"></div>
+        <div class="license-select-list" id="userLicensesListContainer" style="max-height: 400px;">
+            <!-- Aquí se renderizan las licencias -->
+        </div>
 
         <button class="btn-close-edit" onclick="closeUserLicensesPanel()" style="margin-top:1rem;">✕ Cerrar Panel</button>
     </div>
@@ -1379,7 +1358,7 @@
     </div>
 </div>
 
-<!-- Main Content -->
+<!-- Main Content (Ahora visible por defecto) -->
 <div class="main-wrapper" id="mainWrapper" style="display:block;">
     <nav class="navbar">
         <div class="container navbar-content">
@@ -1397,6 +1376,7 @@
                     </div>
                 </div>
                 
+                <!-- MODIFICADO: Ahora llama a openLoginModal() -->
                 <a href="#" class="btn-discord-nav" id="btnComunidad" onclick="openLoginModal()">
                     <i class="fa-brands fa-discord"></i><span>Sercion con discord</span>
                 </a>
@@ -1446,17 +1426,29 @@
             </div>
         </section>
 
-        <!-- Panel de licencias del usuario (ahora visible directo, sin mensaje de bloqueo) -->
+        <!-- Panel de licencias del usuario (para helpers) -->
         <div class="user-licenses-panel" id="userLicensesPanel">
             <h3 style="color:var(--primary); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; text-align:center; justify-content:center;">
                 <i class="fa-solid fa-key"></i> MIS LICENCIAS
             </h3>
             
-            <!-- Badge del rol visible desde el inicio -->
-            <div id="userRoleBadge" style="text-align:center; margin-bottom:1.5rem;"></div>
-            
-            <!-- Lista de licencias visible desde el inicio -->
-            <div id="userLicensesList"></div>
+            <!-- MENSAJE INICIAL ANTES DE LOGIN -->
+            <div id="loginRequiredMessage" class="user-no-licenses">
+                <i class="fa-solid fa-lock"></i>
+                <h3>Acceso Restringido</h3>
+                <p>Tienes que iniciar sesión con Discord para ver tus licencias y tu rol asignado.</p>
+                <button class="btn-primary" style="margin-top:1rem;" onclick="openLoginModal()">
+                    <i class="fa-brands fa-discord"></i> Iniciar Sesión
+                </button>
+            </div>
+
+            <!-- CONTENIDO DE LICENCIAS (OCULTO POR DEFECTO) -->
+            <div id="userLicensesContent" style="display:none;">
+                <div id="userRoleBadge" style="text-align:center; margin-bottom:1rem;">
+                    <!-- Aquí aparecerá el badge del rol -->
+                </div>
+                <div id="userLicensesList"></div>
+            </div>
         </div>
 
         <div class="config-panel" id="configPanel" style="max-width:800px; margin:0 auto 2rem;">
@@ -1484,6 +1476,7 @@
                     </button>
                 </div>
                 
+                <!-- NUEVO BOTÓN: LICENCIAS USUARIO -->
                 <div id="btnUserLicensesContainer" style="display:none;">
                     <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;">ASIGNACIONES:</label>
                     <button class="btn-action-small" style="width:100%; background: linear-gradient(135deg, #ff1a1a, #cc1b1b); border-color: var(--primary);" onclick="openUserLicensesPanel()">
@@ -1530,6 +1523,7 @@
                         <div class="input-hint">El puerto es obligatorio y único para cada licencia</div>
                     </div>
                     
+                    <!-- CAMPO GOOGLE DRIVE -->
                     <div class="input-group">
                         <label style="display:flex; align-items:center; gap:0.5rem;">
                             <input type="checkbox" id="enableDriveLink" style="width:auto; accent-color:var(--primary);">
@@ -1590,6 +1584,7 @@
 
 <script type="module" src="script.js"></script>
 
+<!-- Script para toggle de Google Drive -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const enableDriveCheckbox = document.getElementById('enableDriveLink');
@@ -1603,11 +1598,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Cargar licencias y rol directamente al entrar (sin mensaje de bloqueo)
-    initUserLicenses();
 });
 
+// FUNCIÓN PARA MOSTRAR LA PANTALLA DE LOGIN AL HACER CLIC EN EL BOTÓN
 function openLoginModal() {
     const lockScreen = document.getElementById('lockScreen');
     if (lockScreen) {
@@ -1615,11 +1608,16 @@ function openLoginModal() {
     }
 }
 
-// Renderiza el badge de rol según el usuario
-function renderRoleBadge(userData) {
-    const roleBadge = document.getElementById('userRoleBadge');
-    if (!roleBadge) return;
+// SIMULACIÓN DE LOGIN EXITOSO (Esto debería conectarse con tu backend real)
+function simulateSuccessfulLogin(userData) {
+    // Ocultar mensaje de login requerido
+    document.getElementById('loginRequiredMessage').style.display = 'none';
     
+    // Mostrar contenido de licencias
+    document.getElementById('userLicensesContent').style.display = 'block';
+    
+    // Mostrar badge de rol
+    const roleBadge = document.getElementById('userRoleBadge');
     let badgeClass = 'badge-none';
     let roleName = 'Usuario';
     
@@ -1634,22 +1632,29 @@ function renderRoleBadge(userData) {
         roleName = 'HELPER';
     }
     
-    roleBadge.innerHTML = `<span class="user-item-badge ${badgeClass}" style="font-size:0.85rem; padding:0.4rem 1.2rem;">
-        <i class="fa-solid fa-user-tag"></i> ${roleName}
-    </span>`;
+    roleBadge.innerHTML = `<span class="user-item-badge ${badgeClass}">${roleName}</span>`;
+    
+    // Simular carga de licencias del usuario
+    loadUserLicenses(userData);
 }
 
-// Carga las licencias del usuario (datos de ejemplo, conéctalos a tu backend)
+// FUNCIÓN PARA CARGAR LICENCIAS DEL USUARIO (Simulación)
 function loadUserLicenses(userData) {
     const licensesList = document.getElementById('userLicensesList');
-    if (!licensesList) return;
     
+    // Datos de ejemplo - en producción vendrían del backend
     const sampleLicenses = [
         {
             resource: 'OMARMUSICA',
             ip: '45.126.209.194:22204',
             status: 'active',
             code: '-- Código de licencia OMARMUSICA\nreturn {\n  key = "ABC123XYZ",\n  ip = "45.126.209.194:22204"\n}'
+        },
+        {
+            resource: 'SISTEMA_FACCIONES',
+            ip: '45.126.209.194:22205',
+            status: 'inactive',
+            code: '-- Código de licencia SISTEMA_FACCIONES\nreturn {\n  key = "DEF456UVW",\n  ip = "45.126.209.194:22205"\n}'
         }
     ];
     
@@ -1689,28 +1694,9 @@ function loadUserLicenses(userData) {
     licensesList.innerHTML = html;
 }
 
-// Inicialización al entrar: muestra rol + licencias sin pedir login
-function initUserLicenses() {
-    const currentUser = {
-        username: 'papeletascript1',
-        role: 'admin',
-        userId: '123456789'
-    };
-    renderRoleBadge(currentUser);
-    loadUserLicenses(currentUser);
-}
-
-// Al hacer login real, actualiza rol y licencias
-function simulateSuccessfulLogin(userData) {
-    renderRoleBadge(userData);
-    loadUserLicenses(userData);
-    const lockScreen = document.getElementById('lockScreen');
-    if (lockScreen) lockScreen.style.display = 'none';
-}
-
+// FUNCIÓN PARA COPIAR CÓDIGO DE LICENCIA
 function copyLicenseCode(btn, index) {
     const codeElement = document.getElementById(`licenseCode${index}`);
-    if (!codeElement) return;
     const text = codeElement.textContent;
     
     navigator.clipboard.writeText(text).then(() => {
@@ -1724,6 +1710,21 @@ function copyLicenseCode(btn, index) {
         }, 2000);
     });
 }
+
+// MODIFICAR LA FUNCIÓN loginWithDiscord() PARA LLAMAR A simulateSuccessfulLogin
+// Nota: Esta función debe estar en tu script.js original, pero aquí está la versión modificada
+/*
+function loginWithDiscord() {
+    // ... tu lógica actual de login ...
+    
+    // Después del login exitoso, llamar a:
+    simulateSuccessfulLogin({
+        username: 'papeletascript1',
+        role: 'admin', // o 'moderator', 'helper' según corresponda
+        userId: '123456789'
+    });
+}
+*/
 </script>
 </body>
 </html>
